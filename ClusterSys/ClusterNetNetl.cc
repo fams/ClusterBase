@@ -122,8 +122,10 @@ NetwPkt* ClusterNetNetl::encapsMsg(cPacket *appPkt) {
  **/
 cMessage* ClusterNetNetl::decapsMsg(NetwPkt *msg)
 {
-    ClusterPkt *Cluster_m = msg->decapsulate();
-    ClusterPkt *m = Cluster_m->decapsulate();
+
+    ClusterPkt *Cluster_m = static_cast<ClusterPkt*>(msg->decapsulate());
+    cMessage *m = Cluster_m->decapsulate();
+  //  ClusterPkt *m = Cluster_m->decapsulate();
     setUpControlInfo(m, msg->getSrcAddr());
     // delete the netw packet
     delete msg;
