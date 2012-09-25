@@ -13,12 +13,12 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 // 
 
-package clustersys;
+package clustersys.base;
 
 //
-// TODO auto-generated module
+// Interface To Cluster Managers
 //
-simple ClusterManager like IClusterManager
+moduleinterface IClusterManager
 {
     parameters:
         @display("i=block/circle");

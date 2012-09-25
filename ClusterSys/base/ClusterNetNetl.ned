@@ -13,7 +13,7 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 // 
 
-package clustersys;
+package clustersys.base;
 import org.mixim.base.modules.BaseNetwLayer;
 
 //
@@ -23,6 +23,7 @@ simple ClusterNetNetl extends BaseNetwLayer
 {
     parameters:
       	@display("i=block/fork");
+      	@class(ClusterNetNetl);
       	
     gates:
         input ClusterManIn;

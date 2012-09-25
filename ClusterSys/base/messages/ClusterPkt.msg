@@ -13,19 +13,27 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 // 
 
-#ifndef __CLUSTERSYS_ICLUSTERMANGER_H_
-#define __CLUSTERSYS_ICLUSTERMANGER_H_
+//
+// TODO generated message class
+//
+cplusplus {{
+#include "ApplPkt_m.h"
 
-#include <omnetpp.h>
+}}
 
-/**
- * TODO - Generated class
- */
-class IClusterManger : public cSimpleModule
-{
-  protected:
-    virtual void initialize();
-    virtual void handleMessage(cMessage *msg);
+
+packet ApplPkt;
+
+enum ClusterMessageTypes 
+{ 
+    CLUSTER_DATA 				= 10;
+    CLUSTER_CONTROL 			= 11;
+    LAST_CLUSTER_MESSAGE_KIND 	= 12;
 };
 
-#endif
+packet ClusterPkt extends ApplPkt {
+    int msgtype enum(ClusterMessageTypes);
+    int headId;
+	int originId;
+	
+}

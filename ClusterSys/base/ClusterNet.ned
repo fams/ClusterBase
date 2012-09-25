@@ -13,7 +13,7 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 // 
 
-package clustersys;
+package clustersys.base;
 import ned.IdealChannel;
 import org.mixim.base.connectionManager.IConnectionManager;
 import org.mixim.base.modules.IBaseNetwLayer;
@@ -43,12 +43,12 @@ module ClusterNet like IBaseNetwLayer
 
     submodules:
         ClusterManager: <ClusterManagerType> like IClusterManager {
-            @display("p=175,36");
+            @display("p=186,86");
             timeout = timeout;
 
         }
         clusterNetNetl: ClusterNetNetl {
-            @display("p=75,126");
+            @display("p=101,86");
             headerLength = headerLength;
             stats = stats;
         }

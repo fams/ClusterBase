@@ -13,29 +13,18 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 // 
 
-#ifndef __CLUSTERSYS_CLUSTERNETNETL_H_
-#define __CLUSTERSYS_CLUSTERNETNETL_H_
+package clustersys.base;
 
-#include <omnetpp.h>
-#include "BaseNetwLayer.h"
-#include "SimpleAddress.h"
+import org.mixim.base.modules.BaseWorldUtility;
 
-/**
- * TODO - Generated class
- */
-class MIXIM_API ClusterNetNetl : public BaseNetwLayer
+//
+// Tracks simulation wide traffic statistics
+//
+simple WorldUtilityStats extends BaseWorldUtility
 {
-  protected:
-    //virtual void initialize();
-    virtual NetwPkt* encapsMsg(cPacket*);
-    /** @brief decapsulate higher layer message from NetwPkt */
-    virtual cMessage* decapsMsg(NetwPkt*);
-
-    /** @brief Handle messages from upper layer */
-    virtual void handleUpperMsg(cMessage *);
-
-    /** @brief Handle messages from lower layer */
-    virtual void handleLowerMsg(cMessage *);
-};
-
-#endif
+    parameters:
+        @class(WorldUtilityStats);
+        bool recordVectors = default(false);
+        double bitrate;
+        bool bcTraffic = default(true);
+}

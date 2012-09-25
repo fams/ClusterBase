@@ -23,7 +23,6 @@
 #include "AddressingInterface.h"
 #include "SimpleAddress.h"
 #include "FindModule.h"
-#include "NetwPkt_m.h"
 #include "ArpInterface.h"
 #include "NetwToMacControlInfo.h"
 
@@ -51,9 +50,21 @@ void ClusterNetNetl::initialize()
  **/
 void ClusterNetNetl::handleLowerMsg(cMessage* msg)
 {
+
     NetwPkt *m = static_cast<NetwPkt *>(msg);
     coreEV << " handling packet from " << m->getSrcAddr() << std::endl;
-    sendUp(decapsMsg(m));
+    //
+    ClusterPkt *Cluster_m = static_cast<ClusterPkt*>(m->decapsulate());
+    if(Cluster_m->getMsgtype() < LAST_CLUSTER_MESSAGE_KIND){
+        cMessage *msg = Cluster_m->decapsulate();
+        setUpControlInfo(msg, m->getSrcAddr());
+        sendUp(msg);
+    }
+    sendClusterManager(Cluster_m);
+  //  ClusterPkt *m = Cluster_m->decapsulate();
+
+    // delete the netw packet
+
 }
 
 /**
@@ -69,11 +80,29 @@ void ClusterNetNetl::handleLowerMsg(cMessage* msg)
 void ClusterNetNetl::handleUpperMsg(cMessage* msg)
 {
     assert(dynamic_cast<cPacket*>(msg));
-    sendDown(encapsMsg(static_cast<cPacket*>(msg)));
+    sendDown(encapsMsg(static_cast<cPacket*>(clusterEncaps(static_cast<cPacket*>(msg)))));
 }
 
+ClusterPkt* ClusterNetNetl::clusterEncaps(cPacket *appPkt){
+    LAddress::L3Type netwAddr;
+
+    EV << "Add cluster" <<endl;
+    ClusterPkt *clPkt = new ClusterPkt(appPkt->getName(), appPkt->getKind());
+    clPkt->setMsgtype(CLUSTER_DATA);
+
+    //Getting App CInfo
+    cObject* cInfo = appPkt->removeControlInfo();
+
+    clPkt->setDestAddr(netwAddr);
+    clPkt->setControlInfo( cInfo );
 
 
+    clPkt->encapsulate(appPkt);
+
+    return clPkt;
+}
+
+/*
 NetwPkt* ClusterNetNetl::encapsMsg(cPacket *appPkt) {
     LAddress::L2Type macAddr;
     LAddress::L3Type netwAddr;
@@ -116,7 +145,7 @@ NetwPkt* ClusterNetNetl::encapsMsg(cPacket *appPkt) {
     EV <<" pkt encapsulated\n";
     return pkt;
 }
-
+*/
 /**
  * Decapsulates the packet from the received Network packet
  **/
@@ -131,3 +160,11 @@ cMessage* ClusterNetNetl::decapsMsg(NetwPkt *msg)
     delete msg;
     return m;
 }
+
+void ClusterNetNetl::sendClusterManager(ClusterPkt *msg)
+{
+    ClusterManOut = findGate("ClusterManOut");
+    send(msg,ClusterManOut);
+}
+
+

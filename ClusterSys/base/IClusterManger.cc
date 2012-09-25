@@ -13,16 +13,35 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 // 
 
-#include "IClusterManger.h"
+#include "IClusterManager.h"
 
-Define_Module(IClusterManger);
+Define_Module(IClusterManager);
 
-void IClusterManger::initialize()
+void IClusterManager::initialize()
 {
+     cSimpleModule::initialize();
     // TODO - Generated method body
 }
 
-void IClusterManger::handleMessage(cMessage *msg)
+void IClusterManager::handleMessage(cMessage *msg)
 {
+    cSimpleModule::handleMessage(msg);
     // TODO - Generated method body
 }
+
+IClusterManager::~IClusterManager(){
+
+}
+
+NodePhase IClusterManager::getCurrentPhase()
+{
+}
+
+
+
+NodeRole IClusterManager::getCurrentRole()
+{
+}
+
+
+

@@ -13,23 +13,17 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 // 
 
-enum MCFAMessageTypes 
-{ 
-    	MCFA_ASFREQ 	= 10;
-    	MCFA_ASFREP		= 20;
-    	MCFA_RERM 		= 30;
-    	MCFA_JREQ 		= 40;
-    	MCFA_JREP 		= 50;
-    	MCFA_CHSEL	 	= 60;
-    	MCFA_LREQ 		= 70;
-    	MCFA_MOBINFO	= 80;
-}; 
-    
-packet ClusterMCFA  {
-	int msgtype enum(MCFAMessageTypes);
-	int headId;
-	int originId;
-	double ERM;
-	double Speed;
-	double Direction;
-};
+package clustersys.base;
+
+//
+// TODO auto-generated module
+//
+simple ClusterManager like IClusterManager
+{
+    parameters:
+        @display("i=block/circle");
+        int timeout ;
+    gates:
+        input ClusterManIn;
+        output ClusterManOut;
+}

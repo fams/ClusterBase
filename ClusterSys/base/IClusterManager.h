@@ -13,40 +13,26 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 // 
 
-#ifndef __CLUSTERSYS_CLUSTERMANAGER_H_
-#define __CLUSTERSYS_CLUSTERMANAGER_H_
+#ifndef __CLUSTERSYS_ICLUSTERMANGER_H_
+#define __CLUSTERSYS_ICLUSTERMANGER_H_
 
 #include <omnetpp.h>
-#include <list>
+#include "ClusterNodeProperties.h"
 
 
-#include "MiXiMDefs.h"
-#include "BaseNetwLayer.h"
-#include "SimpleAddress.h"
 /**
  * TODO - Generated class
  */
-typedef struct { LAddress::L3Type NodeAddr; int lastSeen; } NodeEntry;
 
-//class ClusterManager :public BaseModule{
-
-class ClusterManager : public BaseModule
+class IClusterManager : public cSimpleModule
 {
-  protected:
+
+  public:
+    virtual ~IClusterManager();
     virtual void initialize();
-    virtual void handleMessage(cMessage *msg);
-    std::vector<NodeEntry> ChildList;
-    int NodeType;
-public:
-    ClusterManager();
-    virtual ~ClusterManager();
-    void    changeType(int);
-    void    addChild(LAddress::L3Type);
-    void    removeChild(LAddress::L3Type);
-    std::vector<NodeEntry> getChildList();
-private:
-    virtual void reset();
-    virtual void start();
+    virtual void handleMessage(cMessage*);
+    virtual NodePhase getCurrentPhase();
+    virtual NodeRole getCurrentRole();
 };
 
 #endif
