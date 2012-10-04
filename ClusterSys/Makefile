@@ -2,7 +2,7 @@
 # OMNeT++/OMNEST Makefile for ClusterSys
 #
 # This file was generated with the command:
-#  opp_makemake -f --deep -O out -I/Users/fernando/Documents/omnetpp-4.2.2/MiXiM/src/base/phyLayer -I/Users/fernando/Documents/omnetpp-4.2.2/MiXiM/src/base/modules -I/Users/fernando/Documents/omnetpp-4.2.2/MiXiM/src/base/connectionManager -I/Users/fernando/Documents/omnetpp-4.2.2/MiXiM/src/base/messages -I/Users/fernando/Documents/omnetpp-4.2.2/MiXiM/src/base/utils -I/Users/fernando/Documents/omnetpp-4.2.2/MiXiM/src/modules/analogueModel -I/Users/fernando/Documents/omnetpp-4.2.2/MiXiM/examples/ieee802154Narrow -I/Users/fernando/Documents/omnetpp-4.2.2/MiXiM/src/modules/messages -I/Users/fernando/Documents/omnetpp-4.2.2/MiXiM/src/modules/utility -I/Users/fernando/Documents/omnetpp-4.2.2/MiXiM/src/modules/phy -L/Users/fernando/Documents/omnetpp-4.2.2/MiXiM/out/$(CONFIGNAME)/src/base -L/Users/fernando/Documents/omnetpp-4.2.2/MiXiM/out/$(CONFIGNAME)/src/modules -lmiximbase -lmiximmodules -KMIXIM_PROJ=/Users/fernando/Documents/omnetpp-4.2.2/MiXiM
+#  opp_makemake -f --deep -O out -I/Users/fernando/Documents/omnetpp-4.2.2/MiXiM/src/base/phyLayer -I/Users/fernando/Documents/omnetpp-4.2.2/MiXiM/src/base/modules -I/Users/fernando/Documents/omnetpp-4.2.2/MiXiM/src/base/connectionManager -I/Users/fernando/Documents/omnetpp-4.2.2/MiXiM/src/base/messages -I/Users/fernando/Documents/omnetpp-4.2.2/MiXiM/src/base/utils -I/Users/fernando/Documents/omnetpp-4.2.2/MiXiM/examples/ieee802154Narrow -I/Users/fernando/Documents/omnetpp-4.2.2/MiXiM/src/modules/utility -I/Users/fernando/Documents/omnetpp-4.2.2/MiXiM/src/modules/phy -I/Users/fernando/Documents/omnetpp-4.2.2/MiXiM/src/modules/analogueModel -I/Users/fernando/Documents/omnetpp-4.2.2/MiXiM/src/modules/messages -L/Users/fernando/Documents/omnetpp-4.2.2/MiXiM/out/$(CONFIGNAME)/src/base -L/Users/fernando/Documents/omnetpp-4.2.2/MiXiM/out/$(CONFIGNAME)/src/modules -lmiximbase -lmiximmodules -KEPIDEMIC_PROJ=/Users/fernando/Documents/omnetpp-4.2.2/Epidemic -KMIXIM_PROJ=/Users/fernando/Documents/omnetpp-4.2.2/MiXiM
 #
 
 # Name of target to be created (-o option)
@@ -20,14 +20,17 @@ INCLUDE_PATH = \
     -I$(MIXIM_PROJ)/src/base/connectionManager \
     -I$(MIXIM_PROJ)/src/base/messages \
     -I$(MIXIM_PROJ)/src/base/utils \
-    -I$(MIXIM_PROJ)/src/modules/analogueModel \
     -I$(MIXIM_PROJ)/examples/ieee802154Narrow \
-    -I$(MIXIM_PROJ)/src/modules/messages \
     -I$(MIXIM_PROJ)/src/modules/utility \
     -I$(MIXIM_PROJ)/src/modules/phy \
+    -I$(MIXIM_PROJ)/src/modules/analogueModel \
+    -I$(MIXIM_PROJ)/src/modules/messages \
     -I. \
     -Ibase \
-    -Ibase/messages
+    -Ibase/LowestID \
+    -Ibase/LowestID/messages \
+    -Ibase/messages \
+    -Iresults
 
 # Additional object and library files to link with
 EXTRA_OBJS =
@@ -47,8 +50,10 @@ OBJS = \
     $O/base/ClusterNetNetl.o \
     $O/base/IClusterManger.o \
     $O/base/WorldUtilityStats.o \
+    $O/base/LowestID/ClusterLowestID.o \
     $O/ClusterControl_m.o \
     $O/ClusterLowId_m.o \
+    $O/base/LowestID/ClusterLowestIdPkt_m.o \
     $O/base/messages/ClusterPkt_m.o \
     $O/base/messages/NetwPkt_m.o
 
@@ -56,10 +61,12 @@ OBJS = \
 MSGFILES = \
     ClusterControl.msg \
     ClusterLowId.msg \
+    base/LowestID/ClusterLowestIdPkt.msg \
     base/messages/ClusterPkt.msg \
     base/messages/NetwPkt.msg
 
 # Other makefile variables (-K)
+EPIDEMIC_PROJ=/Users/fernando/Documents/omnetpp-4.2.2/Epidemic
 MIXIM_PROJ=/Users/fernando/Documents/omnetpp-4.2.2/MiXiM
 
 #------------------------------------------------------------------------------
@@ -131,13 +138,16 @@ clean:
 	-rm -f ClusterSys ClusterSys.exe libClusterSys.so libClusterSys.a libClusterSys.dll libClusterSys.dylib
 	-rm -f ./*_m.cc ./*_m.h
 	-rm -f base/*_m.cc base/*_m.h
+	-rm -f base/LowestID/*_m.cc base/LowestID/*_m.h
+	-rm -f base/LowestID/messages/*_m.cc base/LowestID/messages/*_m.h
 	-rm -f base/messages/*_m.cc base/messages/*_m.h
+	-rm -f results/*_m.cc results/*_m.h
 
 cleanall: clean
 	-rm -rf $(PROJECT_OUTPUT_DIR)
 
 depend:
-	$(MAKEDEPEND) $(INCLUDE_PATH) -f Makefile -P\$$O/ -- $(MSG_CC_FILES)  ./*.cc base/*.cc base/messages/*.cc
+	$(MAKEDEPEND) $(INCLUDE_PATH) -f Makefile -P\$$O/ -- $(MSG_CC_FILES)  ./*.cc base/*.cc base/LowestID/*.cc base/LowestID/messages/*.cc base/messages/*.cc results/*.cc
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 $O/ClusterControl_m.o: ClusterControl_m.cc \
@@ -147,17 +157,18 @@ $O/ClusterLowId_m.o: ClusterLowId_m.cc \
 $O/base/ClusterManager.o: base/ClusterManager.cc \
 	base/ClusterManager.h \
 	base/ClusterNodeProperties.h \
+	$(MIXIM_PROJ)/src/base/modules/AddressingInterface.h \
 	$(MIXIM_PROJ)/src/base/modules/BaseBattery.h \
 	$(MIXIM_PROJ)/src/base/modules/BaseLayer.h \
 	$(MIXIM_PROJ)/src/base/modules/BaseModule.h \
 	$(MIXIM_PROJ)/src/base/modules/BaseNetwLayer.h \
 	$(MIXIM_PROJ)/src/base/modules/BatteryAccess.h \
+	$(MIXIM_PROJ)/src/base/utils/FindModule.h \
 	$(MIXIM_PROJ)/src/base/utils/HostState.h \
 	$(MIXIM_PROJ)/src/base/utils/MiXiMDefs.h \
 	$(MIXIM_PROJ)/src/base/utils/PassedMessage.h \
 	$(MIXIM_PROJ)/src/base/utils/SimpleAddress.h \
-	$(MIXIM_PROJ)/src/base/utils/miximkerneldefs.h \
-	$(MIXIM_PROJ)/src/modules/utility/Packet.h
+	$(MIXIM_PROJ)/src/base/utils/miximkerneldefs.h
 $O/base/ClusterNetNetl.o: base/ClusterNetNetl.cc \
 	base/ClusterNetNetl.h \
 	base/messages/ClusterPkt_m.h \
@@ -207,6 +218,35 @@ $O/base/WorldUtilityStats.o: base/WorldUtilityStats.cc \
 	$(MIXIM_PROJ)/src/base/utils/SimpleAddress.h \
 	$(MIXIM_PROJ)/src/base/utils/miximkerneldefs.h \
 	$(MIXIM_PROJ)/src/modules/utility/Packet.h
+$O/base/LowestID/ClusterLowestID.o: base/LowestID/ClusterLowestID.cc \
+	base/ClusterManager.h \
+	base/ClusterNodeProperties.h \
+	base/LowestID/ClusterLowestID.h \
+	base/LowestID/ClusterLowestIdPkt_m.h \
+	base/messages/ClusterPkt_m.h \
+	$(MIXIM_PROJ)/src/base/messages/ApplPkt_m.h \
+	$(MIXIM_PROJ)/src/base/modules/AddressingInterface.h \
+	$(MIXIM_PROJ)/src/base/modules/BaseApplLayer.h \
+	$(MIXIM_PROJ)/src/base/modules/BaseBattery.h \
+	$(MIXIM_PROJ)/src/base/modules/BaseLayer.h \
+	$(MIXIM_PROJ)/src/base/modules/BaseModule.h \
+	$(MIXIM_PROJ)/src/base/modules/BaseNetwLayer.h \
+	$(MIXIM_PROJ)/src/base/modules/BatteryAccess.h \
+	$(MIXIM_PROJ)/src/base/utils/FindModule.h \
+	$(MIXIM_PROJ)/src/base/utils/HostState.h \
+	$(MIXIM_PROJ)/src/base/utils/MiXiMDefs.h \
+	$(MIXIM_PROJ)/src/base/utils/NetwControlInfo.h \
+	$(MIXIM_PROJ)/src/base/utils/PassedMessage.h \
+	$(MIXIM_PROJ)/src/base/utils/SimpleAddress.h \
+	$(MIXIM_PROJ)/src/base/utils/miximkerneldefs.h \
+	$(MIXIM_PROJ)/src/modules/utility/Packet.h
+$O/base/LowestID/ClusterLowestIdPkt_m.o: base/LowestID/ClusterLowestIdPkt_m.cc \
+	base/LowestID/ClusterLowestIdPkt_m.h \
+	base/messages/ClusterPkt_m.h \
+	$(MIXIM_PROJ)/src/base/messages/ApplPkt_m.h \
+	$(MIXIM_PROJ)/src/base/utils/MiXiMDefs.h \
+	$(MIXIM_PROJ)/src/base/utils/SimpleAddress.h \
+	$(MIXIM_PROJ)/src/base/utils/miximkerneldefs.h
 $O/base/messages/ClusterPkt_m.o: base/messages/ClusterPkt_m.cc \
 	base/messages/ClusterPkt_m.h \
 	$(MIXIM_PROJ)/src/base/messages/ApplPkt_m.h \

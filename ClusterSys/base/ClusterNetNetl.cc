@@ -27,12 +27,17 @@
 #include "NetwToMacControlInfo.h"
 
 Define_Module(ClusterNetNetl);
-/*
-void ClusterNetNetl::initialize()
+
+void ClusterNetNetl::initialize(int stage)
 {
+    BaseNetwLayer::initialize(stage);
+    if(stage==0){
+        ClusterManIn = findGate("ClusterManIn");
+        ClusterManOut = findGate("ClusterManOut");
+    }
     // TODO - Generated method body
 }
-*/
+
 
 /**
  * All messages have to get a sequence number and the ttl filed has to
@@ -55,7 +60,7 @@ void ClusterNetNetl::handleLowerMsg(cMessage* msg)
     coreEV << " handling packet from " << m->getSrcAddr() << std::endl;
     //
     ClusterPkt *Cluster_m = static_cast<ClusterPkt*>(m->decapsulate());
-    if(Cluster_m->getMsgtype() < LAST_CLUSTER_MESSAGE_KIND){
+    if(Cluster_m->getKind() < LAST_BASE_CLUSTER_MESSAGE_KIND){
         cMessage *msg = Cluster_m->decapsulate();
         setUpControlInfo(msg, m->getSrcAddr());
         sendUp(msg);
@@ -82,13 +87,16 @@ void ClusterNetNetl::handleUpperMsg(cMessage* msg)
     assert(dynamic_cast<cPacket*>(msg));
     sendDown(encapsMsg(static_cast<cPacket*>(clusterEncaps(static_cast<cPacket*>(msg)))));
 }
-
+/**
+ * Adiciona encapsulamento do cluster quando a mensagem vem da camada superiror
+ * FIXME: Quando estiver funcionando adiconar controle do cluster
+ */
 ClusterPkt* ClusterNetNetl::clusterEncaps(cPacket *appPkt){
     LAddress::L3Type netwAddr;
 
-    EV << "Add cluster" <<endl;
-    ClusterPkt *clPkt = new ClusterPkt(appPkt->getName(), appPkt->getKind());
-    clPkt->setMsgtype(CLUSTER_DATA);
+    EV << "Add cluster header" <<endl;
+    ClusterPkt *clPkt = new ClusterPkt(appPkt->getName(), CLUSTER_DATA_PACKET);
+    clPkt->setMsgtype(CLUSTER_DATA_PACKET);
 
     //Getting App CInfo
     cObject* cInfo = appPkt->removeControlInfo();
@@ -102,50 +110,6 @@ ClusterPkt* ClusterNetNetl::clusterEncaps(cPacket *appPkt){
     return clPkt;
 }
 
-/*
-NetwPkt* ClusterNetNetl::encapsMsg(cPacket *appPkt) {
-    LAddress::L2Type macAddr;
-    LAddress::L3Type netwAddr;
-
-    EV <<"in encaps...\n";
-    ClusterPkt *clPkt = new ClusterPkt(appPkt->getName(), appPkt->getKind());
-
-    NetwPkt *pkt = new NetwPkt(clPkt->getName(), clPkt->getKind());
-    pkt->setBitLength(headerLength);
-
-    cObject* cInfo = appPkt->removeControlInfo();
-
-    if(cInfo == NULL){
-    EV << "warning: Application layer did not specifiy a destination L3 address\n"
-       << "\tusing broadcast address instead\n";
-    netwAddr = LAddress::L3BROADCAST;
-    } else {
-    EV <<"CInfo removed, netw addr="<< NetwControlInfo::getAddressFromControlInfo( cInfo ) << std::endl;
-        netwAddr = NetwControlInfo::getAddressFromControlInfo( cInfo );
-    delete cInfo;
-    }
-
-    pkt->setSrcAddr(myNetwAddr);
-    pkt->setDestAddr(netwAddr);
-    EV << " netw "<< myNetwAddr << " sending packet" <<std::endl;
-    if(LAddress::isL3Broadcast( netwAddr )) {
-        EV << "sendDown: nHop=L3BROADCAST -> message has to be broadcasted"
-           << " -> set destMac=L2BROADCAST\n";
-        macAddr = LAddress::L2BROADCAST;
-    }
-    else{
-        EV <<"sendDown: get the MAC address\n";
-        macAddr = arp->getMacAddr(netwAddr);
-    }
-
-    setDownControlInfo(pkt, macAddr);
-    clPkt->encapsulate(appPkt);
-    //encapsulate the application packet
-    pkt->encapsulate(clPkt);
-    EV <<" pkt encapsulated\n";
-    return pkt;
-}
-*/
 /**
  * Decapsulates the packet from the received Network packet
  **/
@@ -161,10 +125,54 @@ cMessage* ClusterNetNetl::decapsMsg(NetwPkt *msg)
     return m;
 }
 
+void ClusterNetNetl::handleClusterMsg(cMessage *msg)
+{
+    assert(dynamic_cast<cPacket*>(msg));
+    sendDown(encapsMsg(static_cast<cPacket*>(msg)));
+}
+
 void ClusterNetNetl::sendClusterManager(ClusterPkt *msg)
 {
     ClusterManOut = findGate("ClusterManOut");
     send(msg,ClusterManOut);
+}
+
+void ClusterNetNetl::handleMessage(cMessage* msg)
+{
+    if (msg->isSelfMessage()){
+        handleSelfMsg(msg);
+    } else if(msg->getArrivalGateId()==upperLayerIn) {
+        recordPacket(PassedMessage::INCOMING,PassedMessage::UPPER_DATA,msg);
+        handleUpperMsg(msg);
+    } else if(msg->getArrivalGateId()==upperControlIn) {
+        recordPacket(PassedMessage::INCOMING,PassedMessage::UPPER_CONTROL,msg);
+        handleUpperControl(msg);
+    } else if(msg->getArrivalGateId()==lowerControlIn){
+        recordPacket(PassedMessage::INCOMING,PassedMessage::LOWER_CONTROL,msg);
+        handleLowerControl(msg);
+    } else if(msg->getArrivalGateId()==lowerLayerIn) {
+        recordPacket(PassedMessage::INCOMING,PassedMessage::LOWER_DATA,msg);
+        handleLowerMsg(msg);
+    } else if(msg->getArrivalGateId() == ClusterManIn){
+        recordPacket(PassedMessage::INCOMING,PassedMessage::UPPER_CONTROL,msg);
+        handleClusterMsg(msg);
+    }
+    else if(msg->getArrivalGateId()==-1) {
+        /* Classes extending this class may not use all the gates, f.e.
+         * BaseApplLayer has no upper gates. In this case all upper gate-
+         * handles are initialized to -1. When getArrivalGateId() equals -1,
+         * it would be wrong to forward the message to one of these gates,
+         * as they actually don't exist, so raise an error instead.
+         */
+        opp_error("No self message and no gateID?? Check configuration.");
+    } else {
+        /* msg->getArrivalGateId() should be valid, but it isn't recognized
+         * here. This could signal the case that this class is extended
+         * with extra gates, but handleMessage() isn't overridden to
+         * check for the new gate(s).
+         */
+        opp_error("Unknown gateID?? Check configuration or override handleMessage().");
+    }
 }
 
 

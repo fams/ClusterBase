@@ -13,20 +13,26 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 // 
 
-//
-// TODO generated message class
-//
 cplusplus {{
-#include "ApplPkt_m.h"
-
+#include "ClusterPkt_m.h"
 }}
+packet ClusterPkt;
 
-
-packet ApplPkt;
-
-packet ClusterPkt extends ApplPkt {
-    int msgtype;
-    int headId;
+//Tipos de Mensagem De formacao de cluster
+enum ClusterMessageTypes 
+{ 
+    	CLUSTER_INIT 		= 60010;
+    	CLUSTER_JOIN 		= 60020;
+    	CLUSTER_ACCEPTED 	= 60030;
+    	CLUSTER_NEIGH_INQ 	= 60040;
+    	CLUSTER_NEIGH_RESP 	= 60050;
+    	CLUSTER_PING 		= 60060;
+    	CLUSTER_PONG 		= 60070;
+    	CLUSTER_REJOIN		= 60080;
+}; 
+    
+packet ClusterLowestIdPkt extends ClusterPkt {
+	int msgtype enum(ClusterMessageTypes);
+	int headId;
 	int originId;
-	
-}
+};

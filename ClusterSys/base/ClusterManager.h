@@ -19,7 +19,6 @@
 #include <omnetpp.h>
 #include <list>
 
-
 #include "MiXiMDefs.h"
 #include "BaseNetwLayer.h"
 #include "SimpleAddress.h"
@@ -27,52 +26,80 @@
 /**
  * TODO - Generated class
  */
-typedef struct { LAddress::L3Type NodeAddr; int lastSeen; } NodeEntry;
+typedef struct {
+    LAddress::L3Type NodeAddr;
+    double lastSeen;
+} NodeEntry;
 
 //class ClusterManager :public BaseModule{
 
-class ClusterManager : public BaseModule
-{
+class ClusterManager: public BaseModule {
 
 public:
     //@brief SignalID para Estatisticas dos nodes
-    const static simsignalwrap_t catClusterNodeStatsSignal;
-
+    static const simsignalwrap_t catClusterNodeStatsSignal;
+    enum ClusterMessageTypes {
+        CLUSTER_DATA_PACKET = 13001,
+        CLUSTER_CONTROL_BLOCK,
+        LAST_BASE_CLUSTER_MESSAGE_KIND
+    };
 protected:
     cOutVector recClusterLifeTime;
-    int ClusterManIn;
-    int ClusterManOut;
-
-private:
-    std::vector<NodeEntry> ChildList;
-    NodeRole  currentRole; //Papel Atual do Node
-    NodePhase currentPhase; //Fase atual do processo de cluster
-    NodeRole  lastRole;   //ultimo papel, usado para calcular mudancas e tempo de vida
-    simtime_t lastRoleChange; //Tempo da ultima mudanca de role
-    int nodeTimeout;
+    /* @brief Canais vindos da net */
+    int NetNetlIn;
+    int NetNetlOut;
 
     /** @brief Application ID */
     int myAddress;
+    /** @brief Header lenght */
+    int headerLength;
+
+private:
+    /*@brief Child List, aponta para os filhotes */
+    std::map<LAddress::L3Type, NodeEntry> ChildList;
+
+    /* @brief Papel Atual */
+    NodeRole currentRole;
+
+    /*@brief Fase atual do processo de cluster */
+    NodePhase currentPhase;
+
+    /*@brief ultimo papel, usado para calcular mudancas e tempo de vida */
+    NodeRole lastRole;
+
+    /* Momento da ultima mudanca de role */
+    simtime_t lastRoleChange; //
+    /* @brief timeout para o node */
+    int nodeTimeout;
 
     /** @brief HeadId */
     int headAddress;
 
 public:
-    ClusterManager():
-            recClusterLifeTime(),
-            ClusterManIn(-1),
-            ClusterManOut(-1),
-            lastRole(UNDEFINED_NODE),
-            currentRole(UNDEFINED_NODE)
-    {};
+    ClusterManager() :
+            recClusterLifeTime("Cluster Lifetime"), headerLength(0), NetNetlIn(
+                    -1), NetNetlOut(-1), currentRole(UNDEFINED_NODE), lastRole(
+                    UNDEFINED_NODE) {
+    }
+
+    ;
     virtual ~ClusterManager();
-    void    addChild(LAddress::L3Type);
-    void    removeChild(LAddress::L3Type);
+    void addChild(LAddress::L3Type);
+
+    void removeChild(LAddress::L3Type);
+
+    void updateSeen(LAddress::L3Type);
+
     NodePhase getCurrentPhase();
+
     NodeRole getCurrentRole();
 
     /** @brief Called every time a message arrives*/
     virtual void handleMessage(cMessage *msg);
+    int getNodeTimeout() const;
+    void setNodeTimeout(int nodeTimeout);
+    int getHeadAddress() const;
+    void setHeadAddress(int headAddress);
 
 private:
     virtual void reset();
@@ -81,16 +108,16 @@ private:
     //@brief Force Icon of Node
     virtual void changeNodeIcon(NodeRole role);
 
-
 protected:
-    virtual void initialize();
+    virtual void sendNetLayer(cMessage*);
+    virtual void initialize(int stage);
     virtual void handleSelfMsg(cMessage *msg);
     virtual void handleNetlayerMsg(cMessage *msg);
-    std::vector<NodeEntry> getChildList();
+    std::map<LAddress::L3Type, NodeEntry> getChildList();
     void setCurrentRole(NodeRole newRole);
     void setCurrentPhase(NodePhase newPhase);
+    cDisplayString& getNodeDisplayString();
+    void setTTString(char*);
 };
-
-
 
 #endif

@@ -26,10 +26,14 @@
  */
 class MIXIM_API ClusterNetNetl : public BaseNetwLayer
 {
+public:
+    ClusterNetNetl():ClusterManOut(-1), ClusterManIn(-1) {}
+    enum ClusterMessageTypes{ CLUSTER_DATA_PACKET = 13001, CLUSTER_CONTROL_BLOCK, LAST_BASE_CLUSTER_MESSAGE_KIND};
 protected:
     int ClusterManOut;
+    int ClusterManIn;
 protected:
-    //virtual void initialize();
+    virtual void initialize(int stage);
  //   virtual NetwPkt* encapsMsg(cPacket*);
     /** @brief decapsulate higher layer message from NetwPkt */
     virtual cMessage* decapsMsg(NetwPkt*);
@@ -40,8 +44,12 @@ protected:
     /** @brief Handle messages from lower layer */
     virtual void handleLowerMsg(cMessage *);
 
+    virtual void handleClusterMsg(cMessage *);
+
     /** @brief Add cluster Encaps */
     ClusterPkt* clusterEncaps(cPacket*);
+
+    virtual void handleMessage(cMessage *);
 
     void sendClusterManager(ClusterPkt*);
 };

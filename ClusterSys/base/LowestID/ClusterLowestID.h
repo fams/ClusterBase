@@ -18,23 +18,34 @@
 
 #include <vector>
 #include "BaseApplLayer.h"
-//#include "WorldUtilityStats.h"
 #include "NetwControlInfo.h"
-//#include "ClusterNode.h"
 #include <omnetpp.h>
-//#include "ClusterInit_m.h"
+#include "ClusterLowestIdPkt_m.h"
 
-
+#include "ClusterManager.h"
 
 typedef struct { int gw ; int head; } RouteEntry;
 
 typedef std::list<int> NodeList;
 typedef std::vector<RouteEntry> RouteList;
 
+
+enum ClusterNodeStates{
+    UNDEFINED       = 0,
+    INITIALIZING    = 1,
+    HEAD_JOIN       = 2,
+    HEAD_NEIGH      = 3,
+    HEAD_MESSAGE    = 4,
+    CHILD_JOIN      = 5,
+    CHILD_MESSAGE   = 6,
+    ACTSETFORM      = 7,
+    HEADSELECT      = 8,
+    RUNNING         = 9,
+};
 /**
  * @brief A module to generate a certain rate of traffic.
  */
-class ClusterLowestID : public BaseApplLayer
+class ClusterLowestID : public ClusterManager
 {
 private:
 	/** Statistics */
@@ -46,28 +57,32 @@ private:
 public:
 
 	/** @brief The message kinds used by this layer.*/
-	enum ClusterApplLayerMessageKinds {
+	enum ClusterLowestIDSelfMsg {
+	    /*
+	     * Self Messages
+	     *
+	     */
 		/** @brief Schedules sending init Cluster.*/
-		SEND_HEAD_INIT = LAST_BASE_APPL_MESSAGE_KIND,
+		SEND_HEAD_INIT = LAST_BASE_CLUSTER_MESSAGE_KIND,
 
-				/** @brief Schedules sending Neighborhood Inquire*/
+		/** @brief Schedules sending Neighborhood Inquire*/
 		SEND_NEIGH_INQ,
 
 		/** @brief Schedules init Process */
 		SEND_PROCESS,
 
-		/** @brief Data Packet.*/
-		CLUSTER_DATA_PACKET,
-
-		/** @brief Cluster Init */
-		CLUSTER_INIT_PACKET,
 		/** @brief Reset to initial state */
-		RESET,
+		DO_RESET,
 
+		/** @brief Responde ao pedido de ingresso */
 		REPLY_JOIN,
 
 		/** @brief Polling */
-		POLL,
+		POLLING,
+
+		//Inter Clusters
+        /** @brief Cluster Init */
+        CLUSTER_FORMATION_PACKET,
 
 		/** @brief Sub classing layers shoudl begin their own kinds at this value.*/
 		LAST_CLUSTER_MESSAGE_KIND,
@@ -115,27 +130,21 @@ protected:
 	cMessage *pollingTimer;
 
 	/** @brief Pointer to world utility module.*/
-	BaseWorldUtility* world;
+//	BaseWorldUtility* world;
 
-	/** @brief ClusterStage */
-	ClusterNodeType nodeType;
+	/** @lista de filhotes desde o ultimo pool */
+	std::vector<NodeEntry> ChildLast;
 
-	/** @brief ClusterState */
-	ClusterNodeStates clusterNodeState;
 
-	/** @brief Application ID */
-    int myAppAddr;
+    /** Maximo de filhotes atingidos */
+    int maxChilds;
 
-    /** @brief HeadId */
-    int headAddr;
-
+    /** Lista de childs temporaria */
     /** @brief ChildList */
     NodeList childs;
 
     NodeList childs_pre;
 
-    /** Maximo de filhotes atingidos */
-    int maxChilds;
 
 	/** @brief percentage of childs lost accepted */
 	double childLostPercentage;
@@ -151,12 +160,11 @@ protected:
     /** @brief verifica se o ping retornou ok */
     int pong;
 
+    // @brief Tentativa de Join corrente
     int joinAttempts_cur ;
 
-    // @brief display String
-	// cDisplayString dispStr ;
-
-    simtime_t clusterLifeTime;
+    /** @brief ClusterState */
+    ClusterNodeStates clusterNodeState;
 
 
 public:
@@ -172,10 +180,6 @@ protected:
 	/** @brief Handle self messages such as timer... */
 	virtual void handleSelfMsg(cMessage *msg);
 
-	/** @brief Handle messages from lower layer */
-	virtual void handleLowerMsg(cMessage *msg);
-
-
 
 	/** @brief Send a broadcast message to lower layer. */
 	virtual void sendBroadcast(ApplPkt*);
@@ -184,19 +188,18 @@ protected:
 	virtual void sendDirectMessage(ApplPkt*, int);
 
 	/** @brief clusterInit */
-	virtual void handleClusterMessage(ClusterInit* m);
-
-	/** @brief change NodeType */
-	virtual void changeNodeType(ClusterNodeType n, int head = 0);
-
-	/** @brief prepare packet */
-	virtual void setPktValues(ClusterInit*, int , int , int );
+	virtual void handleClusterMessage(ClusterLowestIdPkt*);
 
 	/** @brief Handle event RESET */
 	virtual void handleReset(cMessage *msg);
 
 	/** @brief Handle event  Polling */
 	virtual void handlePolling(cMessage *msg);
+
+	virtual void handleNetlayerMsg(cMessage*);
+
+	/** @brief preenche o pacote */
+	virtual void setPktValues(ClusterLowestIdPkt *, int , int  , int  );
 
 };
 

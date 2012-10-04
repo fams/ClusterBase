@@ -13,7 +13,7 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 // 
 
-package clustersys.LowestID;
+package clustersys.base.LowestID;
 import clustersys.base.ClusterManager;
 
 //
@@ -22,7 +22,7 @@ import clustersys.base.ClusterManager;
 
 
 
-simple ClusterLowestId extends ClusterManager
+simple ClusterLowestID extends ClusterManager
 {
     parameters:
         
@@ -34,8 +34,8 @@ simple ClusterLowestId extends ClusterManager
         //@statistic[txMessageSignal](title="Rx Msg"; source="rxMsg"; record=vector,stats; interpolationmode=none);
         
         //Necessario pelo base, nao sei se vou usar 
-        double packetTime @unit(s); // the time a packet needs to be transmitted
-        double packetsPerPacketTime; // the packets to generate per packet time (regulates traffic)
+       // double packetTime @unit(s); // the time a packet needs to be transmitted
+        //double packetsPerPacketTime = default(0); // the packets to generate per packet time (regulates traffic)
         //bool debug; // debug switch
         
         //Caracteristicas do LowestID
@@ -55,9 +55,7 @@ simple ClusterLowestId extends ClusterManager
         int joinAttempts = default(2);
         //@percentagem de filhotes perdidos antes de declarar o Cluster Morto
         double childLostPercentage = default(0.1);
+        @class(ClusterLowestID);
     gates:
-        input lowerGateIn; // from network layer
-        input lowerControlIn;
-        output lowerGateOut; // to network layer
-        output lowerControlOut;
+
 }

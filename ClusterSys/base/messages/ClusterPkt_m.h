@@ -20,27 +20,10 @@
 
 
 /**
- * Enum generated from <tt>base/messages/ClusterPkt.msg</tt> by opp_msgc.
- * <pre>
- * enum ClusterMessageTypes 
- * { 
- *     CLUSTER_DATA 				= 10;
- *     CLUSTER_CONTROL 			= 11;
- *     LAST_CLUSTER_MESSAGE_KIND 	= 12;
- * };
- * </pre>
- */
-enum ClusterMessageTypes {
-    CLUSTER_DATA = 10,
-    CLUSTER_CONTROL = 11,
-    LAST_CLUSTER_MESSAGE_KIND = 12
-};
-
-/**
  * Class generated from <tt>base/messages/ClusterPkt.msg</tt> by opp_msgc.
  * <pre>
  * packet ClusterPkt extends ApplPkt {
- *     int msgtype enum(ClusterMessageTypes);
+ *     int msgtype;
  *     int headId;
  * 	int originId;
  * 	

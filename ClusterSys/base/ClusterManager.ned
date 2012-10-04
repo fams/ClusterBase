@@ -24,6 +24,6 @@ simple ClusterManager like IClusterManager
         @display("i=block/circle");
         int timeout ;
     gates:
-        input ClusterManIn;
-        output ClusterManOut;
+        input NetNetlIn;
+        output NetNetlOut;
 }

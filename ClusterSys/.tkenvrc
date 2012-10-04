@@ -1,5 +1,3 @@
 # Partial Tkenv config file -- see $HOME/.tkenvrc as well
-inspector "Cluster.node[1]" "Host80211" "2" "627x283+26+50:normal"
-inspector "Cluster" "Cluster" "2" "627x283+5+27:normal"
-inspector "Cluster.node[4].netwl.clusterNetNetl.BROADCAST_MESSAGE" "NetwPkt" "1" "513x313+305+392:normal"
+inspector "Cluster.node[2].netwl.ClusterManager" "ClusterManager" "1" "619x312+26+50:normal"
 
