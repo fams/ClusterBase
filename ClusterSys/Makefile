@@ -28,9 +28,7 @@ INCLUDE_PATH = \
     -I. \
     -Ibase \
     -Ibase/LowestID \
-    -Ibase/LowestID/messages \
-    -Ibase/messages \
-    -Iresults
+    -Ibase/messages
 
 # Additional object and library files to link with
 EXTRA_OBJS =
@@ -139,15 +137,13 @@ clean:
 	-rm -f ./*_m.cc ./*_m.h
 	-rm -f base/*_m.cc base/*_m.h
 	-rm -f base/LowestID/*_m.cc base/LowestID/*_m.h
-	-rm -f base/LowestID/messages/*_m.cc base/LowestID/messages/*_m.h
 	-rm -f base/messages/*_m.cc base/messages/*_m.h
-	-rm -f results/*_m.cc results/*_m.h
 
 cleanall: clean
 	-rm -rf $(PROJECT_OUTPUT_DIR)
 
 depend:
-	$(MAKEDEPEND) $(INCLUDE_PATH) -f Makefile -P\$$O/ -- $(MSG_CC_FILES)  ./*.cc base/*.cc base/LowestID/*.cc base/LowestID/messages/*.cc base/messages/*.cc results/*.cc
+	$(MAKEDEPEND) $(INCLUDE_PATH) -f Makefile -P\$$O/ -- $(MSG_CC_FILES)  ./*.cc base/*.cc base/LowestID/*.cc base/messages/*.cc
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 $O/ClusterControl_m.o: ClusterControl_m.cc \
