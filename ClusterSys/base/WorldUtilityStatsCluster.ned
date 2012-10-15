@@ -20,10 +20,10 @@ import org.mixim.base.modules.BaseWorldUtility;
 //
 // Tracks simulation wide traffic statistics
 //
-simple WorldUtilityStats extends BaseWorldUtility
+simple WorldUtilityStatsCluster extends BaseWorldUtility
 {
     parameters:
-        @class(WorldUtilityStats);
+        @class(WorldUtilityStatsCluster);
         bool recordVectors = default(false);
         double bitrate;
         bool bcTraffic = default(true);

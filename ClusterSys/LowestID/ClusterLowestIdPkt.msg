@@ -13,12 +13,24 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 // 
 
-//
-// TODO generated message class
-//
-message ClusterControl {
-    int someField;
-    string anotherField;
-    double arrayField1[];
-    double arrayField2[10];
-}
+cplusplus {{
+#include "ClusterPkt_m.h"
+}}
+packet ClusterPkt;
+
+//Tipos de Mensagem De formacao de cluster
+enum ClusterLowestIdMessageTypes 
+{ 
+    	CLUSTER_INIT 		= 15010;
+    	CLUSTER_JOIN 		= 15020;
+    	CLUSTER_ACCEPTED 	= 15030;
+    	CLUSTER_NEIGH_INQ 	= 15040;
+    	CLUSTER_NEIGH_RESP 	= 15050;
+    	CLUSTER_REJOIN		= 15060;
+}; 
+    
+packet ClusterLowestIdPkt extends ClusterPkt {
+	int msgtype enum(ClusterLowestIdMessageTypes);
+	int headId;
+	int originId;
+};

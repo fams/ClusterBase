@@ -22,6 +22,8 @@
 #include "MiXiMDefs.h"
 #include "BaseNetwLayer.h"
 #include "SimpleAddress.h"
+#include "ClusterPkt_m.h"
+#include "NetwControlInfo.h"
 #include "ClusterNodeProperties.h"
 /**
  * TODO - Generated class
@@ -41,6 +43,7 @@ public:
     enum ClusterMessageTypes {
         CLUSTER_DATA_PACKET = 13001,
         CLUSTER_CONTROL_BLOCK,
+        CLUSTER_BASE_PING,
         LAST_BASE_CLUSTER_MESSAGE_KIND
     };
 protected:
@@ -51,8 +54,26 @@ protected:
 
     /** @brief Application ID */
     int myAddress;
+
     /** @brief Header lenght */
     int headerLength;
+
+    /** @brief intervalo de polling */
+    double pollingTime;
+
+    /** @brief Timer Message to pooling nodes */
+    cMessage *pollingTimer;
+
+    /** @brief time to reset entire thing*/
+    double resetTime;
+
+    /** @brief Reset message to schedule Reset */
+    cMessage *resetTimer;
+
+    /** Statistics */
+    //simsignal_t changeTypeSignal;
+    simsignal_t rxMessageSignal;
+    simsignal_t txMessageSignal;
 
 private:
     /*@brief Child List, aponta para os filhotes */
@@ -69,11 +90,18 @@ private:
 
     /* Momento da ultima mudanca de role */
     simtime_t lastRoleChange; //
+
     /* @brief timeout para o node */
     int nodeTimeout;
 
     /** @brief HeadId */
     int headAddress;
+
+
+    /* @brief ultima vez que o head foi visto */
+    double headLastSeen;
+
+
 
 public:
     ClusterManager() :
@@ -84,11 +112,15 @@ public:
 
     ;
     virtual ~ClusterManager();
+    /* @brief Adiciona node na lista de childs */
     void addChild(LAddress::L3Type);
 
     void removeChild(LAddress::L3Type);
 
+    //std::map<LAddress::L3Type,NodeEntry>::iterator getChild(LAddress::L3Type);
+
     void updateSeen(LAddress::L3Type);
+    void updateSeen();
 
     NodePhase getCurrentPhase();
 
@@ -99,9 +131,11 @@ public:
     int getNodeTimeout() const;
     void setNodeTimeout(int nodeTimeout);
     int getHeadAddress() const;
+    LAddress::L3Type getAddress();
     void setHeadAddress(int headAddress);
 
 private:
+    /** @brief Reset and restart */
     virtual void reset();
     virtual void start();
 
@@ -113,11 +147,22 @@ protected:
     virtual void initialize(int stage);
     virtual void handleSelfMsg(cMessage *msg);
     virtual void handleNetlayerMsg(cMessage *msg);
+    virtual void handlePolling(cMessage*);
+    virtual int doLostChilds(int,int){return true;};
+    /** @brief preenche o pacote */
+    virtual void setPktValues(ClusterPkt *, int , int  , int  );
+    /** @brief Send a broadcast message to lower layer. */
+    virtual void sendBroadcast(ClusterPkt*);
+    /** @brief Send a Message to other node */
+    virtual void sendDirectMessage(ApplPkt*, LAddress::L3Type destAddr);
+    /* Trata o ping dos hosts */
+    virtual void handlePingMsg(ClusterPkt*);
     std::map<LAddress::L3Type, NodeEntry> getChildList();
     void setCurrentRole(NodeRole newRole);
     void setCurrentPhase(NodePhase newPhase);
     cDisplayString& getNodeDisplayString();
     void setTTString(char*);
+
 };
 
 #endif

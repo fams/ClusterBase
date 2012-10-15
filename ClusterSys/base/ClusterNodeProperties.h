@@ -5,14 +5,17 @@
  *      Author: fernando
  */
 
-#ifndef CLUSTERNODEPROPERTIES_H_
-#define CLUSTERNODEPROPERTIES_H_
+#ifndef CLUSTERNODEPROPERTIES2_H_
+#define CLUSTERNODEPROPERTIES2_H_
 
 #include <sstream>
 #include <omnetpp.h>
 #include "MiXiMDefs.h"
 
 #define CLUSTER_SIGNAL_STATISTICS "clustersys.nodestatistics"
+
+
+
 
 enum NodeRole {
     HEAD_NODE = 2,
@@ -23,15 +26,26 @@ enum NodePhase {
     FORMATION = 0,
     TRANSMISSION = 1,
 };
-
+/*! Classe para envio de estatisticas para o WorldStatistics*/
 class ClusterStatisticsPacket : public cObject{
     NodeRole currentRole;
     NodeRole lastRole;
 public:
+    /*! Classe para envio de estatisticas para o WorldStatistics*/
+
     ClusterStatisticsPacket(NodeRole cr = UNDEFINED_NODE, NodeRole lr = UNDEFINED_NODE) :
         cObject(), currentRole(cr), lastRole(lr){
 
     };
+    /*! Return current Role */
+    NodeRole getcurrentRole() const{
+        return currentRole;
+    }
+    /*! Return old Role */
+    NodeRole getlastRole() const{
+        return lastRole;
+    }
+
 };
 
 

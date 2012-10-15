@@ -14,11 +14,14 @@
 // 
 
 #include "ClusterManager.h"
-#include "ClusterNodeProperties.h"
 #include <assert.h>
 #include "FindModule.h"
+#include "ClusterPkt_m.h"
 #include <BaseNetwLayer.h>
+#include <Packet.h>
 #include <AddressingInterface.h>
+#include "ClusterNodeProperties.h"
+
 
 const simsignalwrap_t ClusterManager::catClusterNodeStatsSignal = simsignalwrap_t(CLUSTER_SIGNAL_STATISTICS);
 
@@ -32,11 +35,6 @@ void ClusterManager::initialize(int stage)
         NetNetlIn = findGate("NetNetlIn");
         NetNetlOut = findGate("NetNetlOut");
 
-        /** Init Node */
-        setCurrentRole(UNDEFINED_NODE);
-
-        /** Init Node State */
-        setCurrentPhase(FORMATION);
 
     }else if (stage == 1) {
 
@@ -57,6 +55,11 @@ void ClusterManager::initialize(int stage)
         } else {
             myAddress = netw->getId();
         }
+        /** Init Node */
+        setCurrentRole(UNDEFINED_NODE);
+
+        /** Init Node State */
+        setCurrentPhase(FORMATION);
     }
 }
 
@@ -125,6 +128,8 @@ void ClusterManager::changeNodeIcon(NodeRole role)
 {
     //Pega o Node Pai e troca a imagem
     //cDisplayString& dispStr = getParentModule()->getParentModule()->getDisplayString();
+    if (!ev.isGUI())
+            return;
     cDisplayString& dispStr = getNodeDisplayString();
     switch(role){
     case HEAD_NODE:
@@ -143,9 +148,59 @@ void ClusterManager::changeNodeIcon(NodeRole role)
 void ClusterManager::handleSelfMsg(cMessage *msg)
 {
 }
+void ClusterManager::updateSeen(){
+    headLastSeen = simTime().dbl();
+}
+
+void ClusterManager::handlePingMsg(ClusterPkt *msg) {
+    int msgType = msg->getMsgtype();
+    switch (getCurrentRole()) {
+    case CHILD_NODE: {
+        if (msg->getHeadId() != getHeadAddress())
+            return;
+        if (msgType == CLUSTER_PING) {
+            updateSeen();
+            debugEV << "Recebi um PING! de " << msg->getSrcAddr()
+                    << " Meu headAddress eh: " << getHeadAddress() << endl;
+            ClusterPkt *pkt = new ClusterPkt("DIRECT: CHILD PONG",
+                    CLUSTER_BASE_PING);
+            setPktValues(pkt, CLUSTER_PONG, getHeadAddress(), myAddress);
+            sendDirectMessage(pkt, msg->getSrcAddr());
+        }
+    }
+        break;
+    case HEAD_NODE: {
+        if (msgType == CLUSTER_PONG) {
+            debugEV << "Recebi um PONG! de " << msg->getSrcAddr()
+                    << " Meu headAddress eh: " << getHeadAddress() << endl;
+            /*Verifica se recebeu um pong de um filhote */
+            std::map<LAddress::L3Type, NodeEntry>::iterator it;
+            it = ChildList.find(msg->getSrcAddr());
+            if (it == ChildList.end())
+                return;
+            updateSeen(msg->getSrcAddr());
+        }
+    }
+
+        break;
+
+    }
+}
 
 void ClusterManager::handleNetlayerMsg(cMessage *msg)
 {
+    switch (msg->getKind()) {
+    case CLUSTER_BASE_PING:
+        ClusterPkt *m;
+        m = static_cast<ClusterPkt *>(msg);
+
+        //Contabilizando pacotes recebidos
+        emit(rxMessageSignal, 1);
+        handlePingMsg(m);
+        /*delete msg;
+        msg = 0;*/
+        break;
+    }
 }
 
 int ClusterManager::getNodeTimeout() const
@@ -161,6 +216,9 @@ void ClusterManager::setNodeTimeout(int nodeTimeout)
 int ClusterManager::getHeadAddress() const
 {
     return headAddress;
+}
+LAddress::L3Type ClusterManager::getAddress(){
+    return myAddress;
 }
 
 void ClusterManager::setHeadAddress(int headAddress)
@@ -209,11 +267,103 @@ cDisplayString & ClusterManager::getNodeDisplayString()
     //return getParentModule()->getParentModule()->getDisplayString();
 }
 
+/*
+std::map<LAddress::L3Type,NodeEntry>::iterator  ClusterManager::getChild(LAddress::L3Type childAddress)
+{
+    return ChildList.find(childAddress);
 
+}
+*/
 void ClusterManager::setTTString(char *tt)
 {
+    if (!ev.isGUI())
+            return;
     cDisplayString& dispStr = getNodeDisplayString();
     dispStr.setTagArg("tt", 0, tt);
 }
 
+void ClusterManager::handlePolling(cMessage *msg){
+    debugEV << "Received polling event!!!!\n" << endl;
+        switch(getCurrentRole()){
+        case CHILD_NODE:{
+            debugEV << "Handle child Polling" << endl;
+            if ((headLastSeen + nodeTimeout )  > simTime().dbl()){
+                cancelEvent(resetTimer);
+                int rndTime = (dblrand() * myAddress);
+                scheduleAt( simTime() + nodeTimeout  , resetTimer);
+            }
+            cancelEvent(pollingTimer);
+            scheduleAt( simTime() + pollingTime , pollingTimer);
+        }
+        break;
+        case HEAD_NODE:{
+            debugEV << "Handle head Polling" << endl;
+            int ActiveChilds, TotalChilds;
+            ActiveChilds = TotalChilds = ChildList.size();
 
+            for( std::map<LAddress::L3Type, NodeEntry> ::iterator it = ChildList.begin(); it != ChildList.end(); it++){
+                if ((it->second).lastSeen < (simTime().dbl() + nodeTimeout)){
+                    ActiveChilds--;
+                    removeChild(it->first);
+                }
+            }
+            ClusterPkt *pkt = new ClusterPkt("DIRECT: HEAD POLLING", CLUSTER_BASE_PING);
+            setPktValues(pkt,CLUSTER_PING, getHeadAddress(), myAddress);
+            sendBroadcast(pkt);
+
+            if(doLostChilds(TotalChilds,ActiveChilds)){
+                cancelEvent(resetTimer);
+                cancelEvent(pollingTimer);
+                int rndTime = (dblrand() * myAddress);
+                scheduleAt( simTime() + nodeTimeout + rndTime , resetTimer);
+                scheduleAt( simTime() + pollingTime , pollingTimer);
+            }
+        }
+        break;
+        default:
+            debugEV << "Type Not Handled" << endl;
+        }//switch(nodeType){
+
+}
+void ClusterManager::sendBroadcast(ClusterPkt* pkt)
+{
+    pkt->setDestAddr(-1);
+    // we use the host modules getIndex() as a appl address
+    pkt->setSrcAddr( myAddress );
+    pkt->setBitLength(headerLength);
+
+    // set the control info to tell the network layer the layer 3
+    // address;
+
+    pkt->setControlInfo( new NetwControlInfo(LAddress::L3BROADCAST) );
+
+    debugEV << "Sending broadcast packet!!\n";
+    //Contabilizando pacotes enviados
+    emit(txMessageSignal,1);
+    sendNetLayer( pkt );
+}
+void ClusterManager::sendDirectMessage(ApplPkt* pkt, LAddress::L3Type destAddr){
+    if(destAddr == myAddress){
+        return;
+    }
+    pkt->setDestAddr(destAddr);
+    // we use the host modules getIndex() as a appl address
+    pkt->setSrcAddr( myAddress );
+
+    // set the control info to tell the network layer the layer 3
+    // address;
+    pkt->setControlInfo( new NetwControlInfo(pkt->getDestAddr()) );
+
+    debugEV << "Mensage direta" <<endl;
+    debugEV << "Enviando Mensagem direta para " << destAddr << "!!" << endl;
+    //Contabilizando pacotes enviados
+    emit(txMessageSignal,1);
+    sendNetLayer( pkt );
+}
+
+
+void ClusterManager::setPktValues(ClusterPkt *pkt, int msgType = 0, int h = 0 , int origAddr = 0 ){
+    pkt->setMsgtype(msgType);
+    pkt->setHeadId(h);
+    pkt->setOriginId(origAddr);
+}

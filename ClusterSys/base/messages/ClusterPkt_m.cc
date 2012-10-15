@@ -30,6 +30,13 @@ void doUnpacking(cCommBuffer *, T& t) {
 
 
 
+EXECUTE_ON_STARTUP(
+    cEnum *e = cEnum::find("ClusterPktMessageTypes");
+    if (!e) enums.getInstance()->add(e = new cEnum("ClusterPktMessageTypes"));
+    e->insert(CLUSTER_PING, "CLUSTER_PING");
+    e->insert(CLUSTER_PONG, "CLUSTER_PONG");
+);
+
 Register_Class(ClusterPkt);
 
 ClusterPkt::ClusterPkt(const char *name, int kind) : ApplPkt(name,kind)
@@ -226,6 +233,9 @@ const char *ClusterPktDescriptor::getFieldProperty(void *object, int field, cons
         field -= basedesc->getFieldCount(object);
     }
     switch (field) {
+        case 0:
+            if (!strcmp(propertyname,"enum")) return "ClusterPktMessageTypes";
+            return NULL;
         default: return NULL;
     }
 }

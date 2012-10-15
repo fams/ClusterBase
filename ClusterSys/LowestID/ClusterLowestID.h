@@ -23,6 +23,8 @@
 #include "ClusterLowestIdPkt_m.h"
 
 #include "ClusterManager.h"
+#include "ClusterPkt_m.h"
+
 
 typedef struct { int gw ; int head; } RouteEntry;
 
@@ -48,11 +50,6 @@ enum ClusterNodeStates{
 class ClusterLowestID : public ClusterManager
 {
 private:
-	/** Statistics */
-	//simsignal_t changeTypeSignal;
-	simsignal_t rxMessageSignal;
-	simsignal_t txMessageSignal;
-
 
 public:
 
@@ -99,16 +96,12 @@ protected:
 	/** @brief Time to stay in HEAD_JOIN state.*/
 	double headJoinTime;
 
-	/** @brief time to reset entire thing*/
-	double resetTime;
 
 	/** @brief time to restransmit message */
 	double retransmissionTime;
 
 	/** @brief Time to stay in HEAD_NEIGH state..*/
 	double neighInqTime;
-
-	double pollingTime;
 
 	/** @brief SHortcut to blackboards Packet category.*/
 	int catPacket;
@@ -122,12 +115,6 @@ protected:
 	/** @brief Timer message to schedule next packet send.*/
 	cMessage *delayTimer;
 
-	/** @brief Reset message to schedule Reset */
-	cMessage *resetTimer;
-
-	/** @brief Timer Message to pooling nodes */
-
-	cMessage *pollingTimer;
 
 	/** @brief Pointer to world utility module.*/
 //	BaseWorldUtility* world;
@@ -181,12 +168,6 @@ protected:
 	virtual void handleSelfMsg(cMessage *msg);
 
 
-	/** @brief Send a broadcast message to lower layer. */
-	virtual void sendBroadcast(ApplPkt*);
-
-	/** @brief Send a Message to other node */
-	virtual void sendDirectMessage(ApplPkt*, int);
-
 	/** @brief clusterInit */
 	virtual void handleClusterMessage(ClusterLowestIdPkt*);
 
@@ -194,12 +175,15 @@ protected:
 	virtual void handleReset(cMessage *msg);
 
 	/** @brief Handle event  Polling */
-	virtual void handlePolling(cMessage *msg);
+	virtual void ahandlePolling(cMessage *msg);
 
+	/** @brief Trata mensagens vindas da netlayer */
 	virtual void handleNetlayerMsg(cMessage*);
 
 	/** @brief preenche o pacote */
-	virtual void setPktValues(ClusterLowestIdPkt *, int , int  , int  );
+	virtual void setPktValues(ClusterPkt *, int , int  , int  );
+
+	int doLostChilds(int TotalChilds, int ActiveChilds);
 
 };
 

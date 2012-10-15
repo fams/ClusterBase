@@ -20,10 +20,25 @@
 
 
 /**
+ * Enum generated from <tt>base/messages/ClusterPkt.msg</tt> by opp_msgc.
+ * <pre>
+ * enum ClusterPktMessageTypes 
+ * {
+ *         CLUSTER_PING 		= 10060;
+ *     	CLUSTER_PONG 		= 10070; 
+ * }
+ * </pre>
+ */
+enum ClusterPktMessageTypes {
+    CLUSTER_PING = 10060,
+    CLUSTER_PONG = 10070
+};
+
+/**
  * Class generated from <tt>base/messages/ClusterPkt.msg</tt> by opp_msgc.
  * <pre>
  * packet ClusterPkt extends ApplPkt {
- *     int msgtype;
+ *     int msgtype=enum(ClusterPktMessageTypes);
  *     int headId;
  * 	int originId;
  * 	

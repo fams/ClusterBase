@@ -17,12 +17,12 @@ package clustersys.base;
 import ned.IdealChannel;
 import org.mixim.base.connectionManager.IConnectionManager;
 import org.mixim.base.modules.IBaseNetwLayer;
-import clustersys.base.LowestID.ClusterLowestID;
+import clustersys.LowestID.ClusterLowestID;
 
 module ClusterNet like IBaseNetwLayer
 {
     parameters:
-        string ClusterManagerType = default("ClusterLowestID");
+        string ClusterManagerType = default("ClusterManager");
         @display("i=block/fork;bgl=2");
 
         //Submodule

@@ -24,8 +24,13 @@ cplusplus {{
 
 packet ApplPkt;
 
+enum ClusterPktMessageTypes 
+{
+        CLUSTER_PING 		= 10060;
+    	CLUSTER_PONG 		= 10070; 
+}
 packet ClusterPkt extends ApplPkt {
-    int msgtype;
+    int msgtype=enum(ClusterPktMessageTypes);
     int headId;
 	int originId;
 	

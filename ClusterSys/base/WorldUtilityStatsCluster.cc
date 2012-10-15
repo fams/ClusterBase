@@ -13,15 +13,15 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 //
 
-#include "WorldUtilityStats.h"
+#include "WorldUtilityStatsCluster.h"
 #include "Packet.h"
 #include "BaseLayer.h"
 #include "FindModule.h"
 #include "ClusterManager.h"
 
-Define_Module(WorldUtilityStats);
+Define_Module(WorldUtilityStatsCluster);
 
-void WorldUtilityStats::initialize(int stage)
+void WorldUtilityStatsCluster::initialize(int stage)
 {
 	BaseWorldUtility::initialize(stage);
 	if(stage == 0) {
@@ -41,7 +41,7 @@ void WorldUtilityStats::initialize(int stage)
 }
 
 
-void WorldUtilityStats::receiveSignal(cComponent */*source*/, simsignal_t signalID, cObject *obj)
+void WorldUtilityStatsCluster::receiveSignal(cComponent *source, simsignal_t signalID, cObject *obj)
 {
 	Enter_Method_Silent();
 	if(signalID == BaseLayer::catPacketSignal)
@@ -57,11 +57,39 @@ void WorldUtilityStats::receiveSignal(cComponent */*source*/, simsignal_t signal
 			rcvd.record(bitsReceived);
 		}
 	}else if (signalID == ClusterManager::catClusterNodeStatsSignal){
+	    LAddress::L3Type addr = static_cast<ClusterManager*>(source)->getAddress();
 
+	    const ClusterStatisticsPacket* p = static_cast<const ClusterStatisticsPacket*>(obj);
+	    NodeStatusList[addr] = p->getcurrentRole();
+        if(recordVectors) {
+            recCluster();
+        }
 	}
 }
+void WorldUtilityStatsCluster::recCluster(){
+    //Global status about cluster Heads
+   int numHead=0;
+   int numUndef=0;
+   int numChild=0;
+    for(std::map<LAddress::L3Type,NodeRole>::iterator it = NodeStatusList.begin(); it != NodeStatusList.end(); it++ ){
+        switch(it->second){
+        case HEAD_NODE:
+            numHead++;
+            break;
+        case CHILD_NODE:
+            numChild++;
+            break;
+        case UNDEFINED_NODE:
+            numUndef++;
+            break;
+        }
+    }
+    nH.record(numHead);
+    nU.record(numUndef);
+    nC.record(numChild);
+}
 
-void WorldUtilityStats::finish()
+void WorldUtilityStatsCluster::finish()
 {
 	recordScalar("GlobalTrafficGenerated", bitsSent, "bit");
 	recordScalar("GlobalTrafficReceived", bitsReceived, "bit");
@@ -72,7 +100,8 @@ void WorldUtilityStats::finish()
 	else {
 		recordScalar("Traffic", bitsSent / simTime());
 	}
-	double hosts = simulation.getSystemModule()->par("numHosts");
+	recCluster();
+	double hosts = NodeStatusList.size();
 	if(!par("bcTraffic"))
 		hosts = 2;
 	if (bitrate && hosts > 1) {

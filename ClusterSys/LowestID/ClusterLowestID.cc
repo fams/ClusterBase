@@ -23,6 +23,7 @@
 #include "ClusterLowestIdPkt_m.h"
 
 
+
 Define_Module(ClusterLowestID);
 
 
@@ -35,7 +36,7 @@ void ClusterLowestID::initialize(int stage)
 	    //Node State Ž relativo ao LowestID
         clusterNodeState = INITIALIZING;
         //Inicia o node UNDEFINED
-        setCurrentRole(UNDEFINED_NODE);
+        // setCurrentRole(UNDEFINED_NODE);
 
 		//Messages
 		delayTimer 		= new cMessage("LID-Timer", SEND_HEAD_INIT);
@@ -44,23 +45,22 @@ void ClusterLowestID::initialize(int stage)
 
 		pollingTimer	= new cMessage("polling-timer", POLLING);
 
-        pollingTime = par("pollingTime");
-
 		//Parameters
+
+
+        pollingTime         = par("pollingTime");
 
 		headJoinTime 		= par("headJoinTime");
 
-		resetTime			= par("resetTime");
-
-
+		setNodeTimeout((int)par("resetTime"));
 
 		retransmissionTime	= par("retransmissionTime");
 
 		childLostPercentage = par("childLostPercentage");
 
-		joinAttempts	= par("joinAttempts");
+		joinAttempts	    = par("joinAttempts");
 
-		neighInqTime = par("neighInqTime");
+		neighInqTime        = par("neighInqTime");
 
 
 
@@ -102,7 +102,11 @@ void ClusterLowestID::finish()
 	recordScalar("dropped", nbPacketDropped);
 }
 
-void ClusterLowestID::handlePolling(cMessage *msg){
+int ClusterLowestID::doLostChilds(int TotalChilds, int ActiveChilds){
+    return (ActiveChilds > (childLostPercentage * TotalChilds));
+}
+
+void ClusterLowestID::ahandlePolling(cMessage *msg){
 	debugEV << "Received polling event!!!!\n" << endl;
 		switch(getCurrentRole()){
 		case CHILD_NODE:{
@@ -117,7 +121,7 @@ void ClusterLowestID::handlePolling(cMessage *msg){
 				if(resetTimer)
 					cancelEvent(resetTimer);
 				//resetTimer = new cMessage("reset-timer", RESET);
-				simtime_t resetAt = (simTime() + resetTime + (dblrand() * myAddress));
+				simtime_t resetAt = (simTime() + getNodeTimeout() + (dblrand() * myAddress));
 				scheduleAt( resetAt , resetTimer);
 			}else if(pollAttempt < 3){
 				pollAttempt++;
@@ -125,6 +129,7 @@ void ClusterLowestID::handlePolling(cMessage *msg){
 				setPktValues(pkt,CLUSTER_PING, getHeadAddress(), myAddress);
 				sendDirectMessage(pkt,getHeadAddress());
 			}
+			cancelEvent(pollingTimer);
 			scheduleAt( simTime() + pollingTime , pollingTimer);
 		}
 		break;
@@ -144,11 +149,12 @@ void ClusterLowestID::handlePolling(cMessage *msg){
 				sendBroadcast(pkt);
 				//pollingTimer = new cMessage("polling-timer", POLL);
 				cancelEvent(resetTimer);
+				cancelEvent(pollingTimer);
 				int rndTime = (dblrand() * myAddress);
 				//resetTimer = new cMessage("reset-timer", RESET);
 
 
-				scheduleAt( simTime() + resetTime + rndTime , resetTimer);
+				scheduleAt( simTime() + getNodeTimeout() + rndTime , resetTimer);
 				scheduleAt( simTime() + pollingTime , pollingTimer);
 			}
 		}
@@ -206,6 +212,11 @@ void ClusterLowestID::handleSelfMsg(cMessage *msg)
 		sprintf(tt, "Reply attempt %i to H: %i" , joinAttempts_cur, msg->par("headAddress").doubleValue());
 		setTTString(tt);
 		setCurrentRole(CHILD_NODE);
+		/*FIXME O Polling no CHILD verifica a quanto tempo o HEAD nao Ž visto */
+	    debugEV << "Agendando Polling Child";
+	    cancelEvent(pollingTimer);
+	    scheduleAt( simTime() + pollingTime , pollingTimer);
+
 		setHeadAddress(msg->par("headAddress").doubleValue());
 
 		//Muda estado para CHILD_NOIN
@@ -216,7 +227,7 @@ void ClusterLowestID::handleSelfMsg(cMessage *msg)
 		sendDirectMessage(pkt,msg->par("reply-to").doubleValue());
 		//FIXME
 		//Agenda Mudanca de estado
-		debugEV << "Agendando reenvio para " << (simTime()+resetTime) << endl;
+		debugEV << "Agendando reenvio para " << (simTime()+getNodeTimeout()) << endl;
 		//Se acabaram as tentativas, reset
 		if(joinAttempts_cur > joinAttempts){
 			cancelAndDelete(delayTimer);
@@ -298,6 +309,7 @@ void ClusterLowestID::handleSelfMsg(cMessage *msg)
 	default:
 		EV << "Unkown selfmessage! -> delete, kind: "<<msg->getKind() <<endl;
 		delete msg;
+		break;
 	}
 }
 
@@ -305,7 +317,7 @@ void ClusterLowestID::handleSelfMsg(cMessage *msg)
 void ClusterLowestID::handleNetlayerMsg(cMessage *msg)
 {
 
-
+    ClusterManager::handleNetlayerMsg(msg);
 	switch (msg->getKind()) {
 		case CLUSTER_FORMATION_PACKET:
 			ClusterLowestIdPkt *m;
@@ -327,6 +339,33 @@ void ClusterLowestID::handleClusterMessage(ClusterLowestIdPkt* m){
 	EV << "Received Msg Type " << msgType << " From: " <<  m->getSrcAddr() << endl;
 
 	switch(msgType){
+
+	/*********************
+	 *  HEAD Messages
+	 *********************/
+	case CLUSTER_JOIN:{
+	        //Recebi um Cluster Join
+	        debugEV << "Received CLUSTER_JOIN from:" << m->getSrcAddr() << endl;
+	        switch(clusterNodeState){
+	        case HEAD_JOIN:
+	        case HEAD_MESSAGE:
+	                if(msgType== CLUSTER_JOIN){
+	                    //Adicionando na lista de filhotes
+	                    addChild(m->getSrcAddr());
+	                    childs.push_back(m->getSrcAddr());
+	                    maxChilds = childs.size();
+	                    //Envia Mensagem de JoinAccept
+	                    ClusterLowestIdPkt *pkt = new ClusterLowestIdPkt("DIRECT: CLUSTER_ACCEPTED:", CLUSTER_FORMATION_PACKET);
+	                    setPktValues(pkt, CLUSTER_ACCEPTED, m->getSrcAddr(), myAddress);
+	                    sendDirectMessage(pkt,m->getSrcAddr());
+	                }
+	        break;
+	        default:
+	            EV << "CLUSTER_JOIN in state" << clusterNodeState << endl;
+	        }
+	    }
+	    break;
+
 	case CLUSTER_REJOIN:{
 		if(getCurrentRole() == HEAD_NODE){
 			ClusterLowestIdPkt *pkt = new ClusterLowestIdPkt("BROADCAST: CLUSTER_INIT", CLUSTER_FORMATION_PACKET);
@@ -336,6 +375,9 @@ void ClusterLowestID::handleClusterMessage(ClusterLowestIdPkt* m){
 		}
 	}
 	break;
+	/*********************
+	 *  UNDEFINED Messages
+	 *********************/
 	//Recebi mensagem de associac‹o
 	case CLUSTER_INIT:{
 		debugEV << "Received CLUSTER_INIT" <<endl;
@@ -349,6 +391,7 @@ void ClusterLowestID::handleClusterMessage(ClusterLowestIdPkt* m){
 			sprintf(tt, "Received INIT from Head %i \n" ,  m->getHeadId() );
 			setTTString(tt);
 			//Para o proprio timer
+			updateSeen();
 			cancelAndDelete(delayTimer);
 			delayTimer = new cMessage("LID-Timer", REPLY_JOIN);
 			delayTimer->addPar("reply-to").setDoubleValue(m->getSrcAddr());
@@ -359,29 +402,10 @@ void ClusterLowestID::handleClusterMessage(ClusterLowestIdPkt* m){
 
 	}//case CLUSTER_INIT
 	break;
-	case CLUSTER_JOIN:{
-		//Recebi um Cluster Join
-		debugEV << "Received CLUSTER_JOIN from:" << m->getSrcAddr() << endl;
-		switch(clusterNodeState){
-		case HEAD_JOIN:
-		case HEAD_MESSAGE:
-				if(msgType== CLUSTER_JOIN){
-					//Adicionando na lista de filhotes
-
-					childs.push_back(m->getSrcAddr());
-					maxChilds = childs.size();
-					//Envia Mensagem de JoinAccept
-					ClusterLowestIdPkt *pkt = new ClusterLowestIdPkt("DIRECT: CLUSTER_ACCEPTED:", CLUSTER_FORMATION_PACKET);
-					setPktValues(pkt, CLUSTER_ACCEPTED, m->getSrcAddr(), myAddress);
-					sendDirectMessage(pkt,m->getSrcAddr());
-				}
-		break;
-		default:
-			EV << "CLUSTER_JOIN in state" << clusterNodeState << endl;
-		}
-	}
-	break;
-	case CLUSTER_ACCEPTED:
+	/*********************
+	*  CHILD Messages
+	*********************/
+		case CLUSTER_ACCEPTED:
 		if(clusterNodeState == CHILD_JOIN){
 			debugEV << "Becaming child of " << m->getSrcAddr() << endl;
 			clusterNodeState = CHILD_MESSAGE;
@@ -390,13 +414,15 @@ void ClusterLowestID::handleClusterMessage(ClusterLowestIdPkt* m){
 			sprintf(tt, "Head of: %i" , m->getSrcAddr());
 			setTTString(tt);
 			setHeadAddress( m->getSrcAddr());
-			pong = 1;
-			joinAttempts_cur = 0;
+			updateSeen();
 			cancelEvent(delayTimer);
 		}else{
 			debugEV << "received CLUSTER_ACCEPTED but not in CHILD_JOIN actual state: " << clusterNodeState << endl;
 		}
 	break;
+	/*********************
+	*  BOTH Messages
+	*********************/
 	case CLUSTER_NEIGH_INQ:
 		debugEV << "Received CLUSTER_NEIGH_INQ from:" << m->getSrcAddr() << endl;
 		switch(clusterNodeState){
@@ -438,8 +464,10 @@ void ClusterLowestID::handleClusterMessage(ClusterLowestIdPkt* m){
 		break;
 		default:
 				EV << "STATE NOT HANDLED" << endl;
+		break;
 		}
 	break;
+	/* Nao vou mais usar  */
 	case CLUSTER_PING:{
 		debugEV << "Recebi um PING! de " << m->getSrcAddr() << " Meu headAddress eh: " << getHeadAddress() << endl;
 		if(m->getHeadId() == getHeadAddress()) {
@@ -473,43 +501,8 @@ void ClusterLowestID::handleClusterMessage(ClusterLowestIdPkt* m){
 	}
 }
 
-void ClusterLowestID::sendBroadcast(ApplPkt* pkt)
-{
-	pkt->setDestAddr(-1);
-	// we use the host modules getIndex() as a appl address
-	pkt->setSrcAddr( myAddress );
-	pkt->setBitLength(headerLength);
 
-	// set the control info to tell the network layer the layer 3
-	// address;
-	pkt->setControlInfo( new NetwControlInfo(LAddress::L3BROADCAST) );
-
-	debugEV << "Sending broadcast packet!!\n";
-	//Contabilizando pacotes enviados
-	emit(txMessageSignal,1);
-	sendNetLayer( pkt );
-}
-
-void ClusterLowestID::sendDirectMessage(ApplPkt* pkt, int destAddr){
-	if(destAddr == myAddress){
-		return;
-	}
-	pkt->setDestAddr(destAddr);
-	// we use the host modules getIndex() as a appl address
-	pkt->setSrcAddr( myAddress );
-
-	// set the control info to tell the network layer the layer 3
-	// address;
-	pkt->setControlInfo( new NetwControlInfo(pkt->getDestAddr()) );
-
-	debugEV << "Mensage direta" <<endl;
-	debugEV << "Enviando Mensagem direta para " << destAddr << "!!" << endl;
-	//Contabilizando pacotes enviados
-	emit(txMessageSignal,1);
-	sendNetLayer( pkt );
-}
-
-void ClusterLowestID::setPktValues(ClusterLowestIdPkt *pkt, int msgType = 0, int h = 0 , int origAddr = 0 ){
+void ClusterLowestID::setPktValues(ClusterPkt *pkt, int msgType = 0, int h = 0 , int origAddr = 0 ){
 	pkt->setMsgtype(msgType);
     pkt->setHeadId(h);
 	pkt->setOriginId(origAddr);

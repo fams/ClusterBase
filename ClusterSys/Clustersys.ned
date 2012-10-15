@@ -19,7 +19,7 @@ import org.mixim.modules.node.Host80211;
 
 import org.mixim.base.modules.BaseNetwork;
 
-import epidemic.DTNApplLayer;
+//import epidemic.DTNApplLayer;
 
 network Cluster extends BaseNetwork
 {

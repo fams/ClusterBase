@@ -19,13 +19,15 @@
 #include <omnetpp.h>
 #include "BaseWorldUtility.h"
 #include "ClusterNodeProperties.h"
+#include "SimpleAddress.h"
+
 
 /**
  * @brief Collects global statistics (like channel usage).
  *
  * @ingroup exampleIEEE802154Narrow
  */
-class WorldUtilityStats : public BaseWorldUtility,
+class WorldUtilityStatsCluster : public BaseWorldUtility,
 						  public cListener
 {
 protected:
@@ -54,10 +56,8 @@ protected:
 
 	cOutVector clusterLifeTime;
 
-	 //Global status about cluster Heads
-	int numHead;
-	int numUndef;
-	int numChild;
+    //Global status
+    std::map<LAddress::L3Type, NodeRole> NodeStatusList;
 
 	//Vetores Globais de Role de Nos
 	cOutVector nH,nU,nC;
@@ -67,22 +67,24 @@ protected:
     virtual void initialize(int stage);
 
 public:
-	WorldUtilityStats()
+	WorldUtilityStatsCluster()
 		: BaseWorldUtility()
 		, cListener()
 		, bitsSent(0)
 		, bitsReceived(0)
 		, sent()
 		, rcvd()
+	    , nH("Nodes Head")
+	    , nU("Nodes Undef")
+	    , nC("Nodes Child")
 		, recordVectors(false)
 		, bitrate(0)
-	    , numHead(0)
-	    , numUndef(0)
-	    , numChild(0)
 	{}
 	virtual void receiveSignal(cComponent *source, simsignal_t signalID, cObject *obj);
 
 	virtual void finish();
+
+	virtual void recCluster(); /*Grava os dados de estado do node */
 };
 
 #endif
