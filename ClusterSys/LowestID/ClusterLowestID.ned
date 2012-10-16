@@ -54,7 +54,7 @@ simple ClusterLowestID extends ClusterManager
         //@brief Tentativas de join antes de desistir
         int joinAttempts = default(2);
         //@percentagem de filhotes perdidos antes de declarar o Cluster Morto
-        double childLostPercentage = default(0.1);
+        double childLostPercentage = default(0.5);
         @class(ClusterLowestID);
     gates:
 

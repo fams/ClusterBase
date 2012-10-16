@@ -148,7 +148,7 @@ protected:
     virtual void handleSelfMsg(cMessage *msg);
     virtual void handleNetlayerMsg(cMessage *msg);
     virtual void handlePolling(cMessage*);
-    virtual int doLostChilds(int,int){return true;};
+    virtual int isHeadValid(int,int){return true;};
     /** @brief preenche o pacote */
     virtual void setPktValues(ClusterPkt *, int , int  , int  );
     /** @brief Send a broadcast message to lower layer. */

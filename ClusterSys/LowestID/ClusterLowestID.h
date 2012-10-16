@@ -175,7 +175,7 @@ protected:
 	virtual void handleReset(cMessage *msg);
 
 	/** @brief Handle event  Polling */
-	virtual void ahandlePolling(cMessage *msg);
+	//virtual void ahandlePolling(cMessage *msg);
 
 	/** @brief Trata mensagens vindas da netlayer */
 	virtual void handleNetlayerMsg(cMessage*);
@@ -183,7 +183,7 @@ protected:
 	/** @brief preenche o pacote */
 	virtual void setPktValues(ClusterPkt *, int , int  , int  );
 
-	int doLostChilds(int TotalChilds, int ActiveChilds);
+	int isHeadValid(int TotalChilds, int ActiveChilds);
 
 };
 
