@@ -25,7 +25,6 @@
 #include "GPSInfo.h"
 #include "MCFAAutomata.h"
 #include "ClusterMCFAPkt_m.h"
-
 #include "ClusterManager.h"
 #include "ClusterPkt_m.h"
 
@@ -54,6 +53,8 @@ public:
 		INIT_MCFA,	//Init Cluster Formation
 
 		PROC_MCFA,	//Processa Formacao
+
+		PROC_MCFA2, //Reset MCFA e recomeca
 		/** inter layer message kinds */
 		MCFA_CTRL, //Protocol Control Messages
 
@@ -86,15 +87,14 @@ protected:
 	/** @brief Estagio K da formacao */
 	int stageK;
 
-	/** @brief currStage mostra se o algoritmo esta 0: iterando a procura de um ch 1: voltando de um getERM
-	 * 2: tem um ch selecionado
-	  */
+	/* @brief currStage mostra se o algoritmo esta 0: iterando a procura de um ch 1: voltando de um getERM
+	 *  tem um ch selecionado
+	 */
 	int currStage;
 
 	double pollingTime;
 	/** @brief time to reset entire thing*/
 	double resetTime;
-
 	/** @brief time to restransmit message */
 	double retransmissionTime;
 
@@ -116,12 +116,6 @@ protected:
 	/** @brief SHortcut to blackboards ClusterState category.*/
 	int catClusterNode;
 
-	/** @brief Application ID */
-    int myAppAddr;
-
-	/** @brief Pointer to world utility module.*/
-	//BaseWorldUtility* world;
-
 	/* Tracking GPS */
 	Move HostMove;
 
@@ -131,25 +125,15 @@ protected:
     /** @brief Tentativas de contactar o head */
     int pollAttempt;
 
-    /** @brief verifica se o ping retornou ok */
-    int pong;
-
 	/* Save GPS Info */
 	GPSInfo gps;
 
-	/** @brief ClusterStage */
-	//ClusterNodeType nodeType;
 
-	/** @brief ClusterState */
+	/** @brief Estado do Node na formacao */
 	ClusterNodeStates clusterNodeState;
 
     /** @brief ChildList */
     NodeList childs;
-
-  //  NodeList childs_pre;
-
-    /** Maximo de filhotes atingidos */
-  //  int maxChilds;
 
 	/** @brief percentage of childs lost accepted */
 	double childLostPercentage;
@@ -157,10 +141,14 @@ protected:
     /** @brief HeadId */
     int headAddr;
 
+    /* mudanca de dados de GPS */
     int novoGPS;
 
-    /** Timers */
+    /* Tempo de espera para formar o ActionSet */
     double asfreqTime;
+
+    /* Tempo de espera para um RERM */
+    double rermTimeout;
 
     //MCFA Selected ch
     int ch;
@@ -185,15 +173,6 @@ protected:
 	/** @brief Handle event RESET */
 	virtual void handleReset(cMessage *msg);
 
-	/** @brief Handle event  Polling */
-//	virtual void handlePolling(cMessage *msg);
-
-	/** @brief Send a broadcast message to lower layer. */
-//	virtual void sendBroadcast(ApplPkt*);
-
-	/** @brief Send a Message to other node */
-//	virtual void sendDirectMessage(ApplPkt*, int);
-
 	int MCF();
 
 	void handleMCFAControl(ClusterMCFAPkt *m);
@@ -206,12 +185,6 @@ protected:
 
 	//*Broadcast MobInfo */
 	void sendMobInfo();
-
-//	void receiveSignal(cComponent *source, simsignal_t signalID, cObject *obj);
-
-	//void changeNodeType(ClusterNodeType Nodetype, int h);
-	/** @brief prepare packet */
-	//virtual void setPktValues(ClusterInit*, int , int , int );
 
 };
 

@@ -33,24 +33,26 @@ simple ClusterMCFA extends ClusterManager
         int headerLength @unit(bit);
         double packetsPerPacketTime; // the packets to generate per packet time (regulates traffic)
         //
-
         int headJoinTime = default(200); //the time node will stay on HeadJoin state
+        //@brief Tempo procurando Vizinhos
         int neighInqTime = default(500); //the time node will stay on HeadJoin state
+        //@brief Intervalo entre pings
         int pollingTime = default(100);
+        //@brief Timeout para RESET
         int resetTime = default(999);
+        //Tentativas de retransmissao
         int retransmissionTime = default(10);
         int joinAttempts = default(2);
         double childLostPercentage = default(0.1);
         
         int 	asfreqTime = default(50); //Seconds waiting for ASFREQ
+        int 	rermTimeout = default(5); //Espera pelo RERM
         double  ChooseProb = default(0.9);
         double 	rewardP = default (0.1);
         double 	penaltyP = default(0.1);
         double	gpsInterval = default(1.0);
+        @class(ClusterMCFA);
+        
         
     gates:
-        input lowerGateIn; // from network layer
-        input lowerControlIn;
-        output lowerGateOut; // to network layer
-        output lowerControlOut;
 }

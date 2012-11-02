@@ -1,0 +1,360 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scave:Analysis xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:scave="http://www.omnetpp.org/omnetpp/scave">
+  <inputs>
+    <inputs name="/ClusterSys/results/General-0.vec"/>
+    <inputs name="/ClusterSys/results/General-2.vec"/>
+    <inputs name="/ClusterSys/results/General-1.vec"/>
+    <inputs name="/ClusterSys/results/General-3.vec"/>
+    <inputs name="/ClusterSys/results/General-4.vec"/>
+    <inputs name="/ClusterSys/results/General-5.vec"/>
+  </inputs>
+  <datasets>
+    <datasets name="Nodes Parado">
+      <items xsi:type="scave:Add" filterPattern="run(General-1*) AND module(Cluster.world) AND name(&quot;Nodes *&quot;)" type="VECTOR"/>
+      <items xsi:type="scave:Add" filterPattern="run(General-3*) AND module(Cluster.world) AND name(&quot;Nodes *&quot;)" type="VECTOR"/>
+      <items xsi:type="scave:Add" filterPattern="run(General-0*) AND module(Cluster.world) AND name(&quot;Nodes *&quot;)" type="VECTOR"/>
+      <items xsi:type="scave:Group" name="Por Tipo">
+        <items xsi:type="scave:LineChart" name="Por_Tipo_HEAD_vel_0.0" lineNameFormat="">
+          <filters xsi:type="scave:Select" filterPattern="&quot;Nodes Head&quot; " type="VECTOR"/>
+          <properties name="Graph.Title" value="HEADS x Tempo (vel=0.0)"/>
+          <properties name="X.Axis.Title" value="Tempo (s)"/>
+          <properties name="Y.Axis.Title" value="Número"/>
+          <properties name="Legend.Display" value="true"/>
+          <properties name="Legend.Border" value="true"/>
+          <properties name="Line.Name//ClusterHead/results/General-0.vec General-0-20120220-14:18:06-8248 0 $0=30, $1=30, $2=0.0mps" value="30 Nodes"/>
+          <properties name="Line.Name//ClusterHead/results/General-16.vec General-16-20120220-14:19:46-8262 16 $0=60, $1=60, $2=0.0mps" value="60 Nodes"/>
+          <properties name="Line.Name//ClusterHead/results/General-32.vec General-32-20120220-14:35:16-8277 32 $0=90, $1=90, $2=0.0mps" value="90 Nodes"/>
+          <properties name="Line.Name//ClusterHead/results/General-0.vec General-0-20120415-14:55:02-59580 0 $0=30, $1=30, $2=0.0mps" value="30 nodes"/>
+          <properties name="Line.Name//ClusterHead/results/General-16.vec General-16-20120408-12:11:01-40218 16 $0=60, $1=60, $2=0.0mps" value="60 nodes"/>
+          <properties name="Line.Name//ClusterHead/results/General-32.vec General-32-20120408-12:29:59-40296 32 $0=90, $1=90, $2=0.0mps" value="90 nodes"/>
+        </items>
+        <items xsi:type="scave:LineChart" name="Por_Tipo_Child_vel_0.0" lineNameFormat="">
+          <filters xsi:type="scave:Select" filterPattern="&quot;Nodes Child&quot; " type="VECTOR"/>
+          <properties name="Graph.Title" value="Childs x Tempo (vel=0.0)"/>
+          <properties name="Y.Axis.Title" value="Número"/>
+          <properties name="Legend.Display" value="true"/>
+          <properties name="Legend.Border" value="true"/>
+          <properties name="Line.Name//ClusterHead/results/General-0.vec General-0-20120220-14:18:06-8248 0 $0=30, $1=30, $2=0.0mps" value="30 Nodes"/>
+          <properties name="Line.Name//ClusterHead/results/General-16.vec General-16-20120220-14:19:46-8262 16 $0=60, $1=60, $2=0.0mps" value="60 Nodes"/>
+          <properties name="Line.Name//ClusterHead/results/General-32.vec General-32-20120220-14:35:16-8277 32 $0=90, $1=90, $2=0.0mps" value="90 Nodes"/>
+          <properties name="Line.Name//ClusterHead/results/General-0.vec General-0-20120415-14:55:02-59580 0 $0=30, $1=30, $2=0.0mps" value="30 Nodes"/>
+          <properties name="Line.Name//ClusterHead/results/General-16.vec General-16-20120408-12:11:01-40218 16 $0=60, $1=60, $2=0.0mps" value="60 Nodes"/>
+          <properties name="Line.Name//ClusterHead/results/General-32.vec General-32-20120408-12:29:59-40296 32 $0=90, $1=90, $2=0.0mps" value="90 Nodes"/>
+        </items>
+        <items xsi:type="scave:LineChart" name="Por_Tipo_Undef_vel_0.0" lineNameFormat="">
+          <filters xsi:type="scave:Select" filterPattern="&quot;Nodes Undef&quot;" type="VECTOR"/>
+          <properties name="Graph.Title" value="Nodes Undef x Tempo (vel=0.0)"/>
+          <properties name="Y.Axis.Title" value="Número"/>
+          <properties name="Legend.Display" value="true"/>
+          <properties name="Legend.Border" value="true"/>
+          <properties name="Line.Name//ClusterHead/results/General-0.vec General-0-20120220-14:18:06-8248 0 $0=30, $1=30, $2=0.0mps" value="30 Nodes"/>
+          <properties name="Line.Name//ClusterHead/results/General-16.vec General-16-20120220-14:19:46-8262 16 $0=60, $1=60, $2=0.0mps" value="60 Nodes"/>
+          <properties name="Line.Name//ClusterHead/results/General-32.vec General-32-20120220-14:35:16-8277 32 $0=90, $1=90, $2=0.0mps" value="90 Nodes"/>
+          <properties name="Line.Name//ClusterHead/results/General-0.vec General-0-20120415-14:55:02-59580 0 $0=30, $1=30, $2=0.0mps" value="30 Nodes"/>
+          <properties name="Line.Name//ClusterHead/results/General-16.vec General-16-20120408-12:11:01-40218 16 $0=60, $1=60, $2=0.0mps" value="60 Nodes"/>
+          <properties name="Line.Name//ClusterHead/results/General-32.vec General-32-20120408-12:29:59-40296 32 $0=90, $1=90, $2=0.0mps" value="90 Nodes"/>
+          <properties name="Line.Name//ClusterHead/results/General-0.vec General-0-20120510-11:02:01-20475 0 $0=30, $1=30, $2=0.0mps" value="30 Nodes"/>
+        </items>
+      </items>
+      <items xsi:type="scave:Group" name="Por numero">
+        <items xsi:type="scave:LineChart" name="Por_Numero_30_vel_0.0" lineNameFormat="">
+          <filters xsi:type="scave:Select" filterPattern="run(General-0-*) and &quot;Nodes *&quot; " type="VECTOR"/>
+          <properties name="Graph.Title" value="Tipo x Tempo  (30 Nodes, vel=0.0)"/>
+          <properties name="X.Axis.Title" value="Tempo (s)"/>
+          <properties name="Y.Axis.Title" value="Número"/>
+          <properties name="Legend.Display" value="true"/>
+          <properties name="Legend.Border" value="true"/>
+        </items>
+        <items xsi:type="scave:LineChart" name="Por_Numero_60_vel_0.0" lineNameFormat="">
+          <filters xsi:type="scave:Select" filterPattern="run(General-16-*) and &quot;Nodes *&quot; " type="VECTOR"/>
+          <properties name="Graph.Title" value="Tipo x Tempo  (60 Nodes, vel=0.0)"/>
+          <properties name="X.Axis.Title" value="Tempo (s)"/>
+          <properties name="Y.Axis.Title" value="Número"/>
+          <properties name="Legend.Display" value="true"/>
+          <properties name="Legend.Border" value="true"/>
+        </items>
+        <items xsi:type="scave:LineChart" name="Por_Numero_90_vel_0.0" lineNameFormat="">
+          <filters xsi:type="scave:Select" filterPattern="run(General-32-*) and &quot;Nodes *&quot; " type="VECTOR"/>
+          <properties name="Graph.Title" value="Tipo x Tempo  (90 Nodes, vel=0.0)"/>
+          <properties name="X.Axis.Title" value="Tempo (s)"/>
+          <properties name="Y.Axis.Title" value="Número"/>
+          <properties name="Legend.Display" value="true"/>
+          <properties name="Legend.Border" value="true"/>
+        </items>
+      </items>
+    </datasets>
+    <datasets name="Movendo 0.01">
+      <items xsi:type="scave:Add" filterPattern="run(General-1-*) AND module(ClusterHead.world)" type="VECTOR"/>
+      <items xsi:type="scave:Add" filterPattern="run(General-33*) AND module(ClusterHead.world)" type="VECTOR"/>
+      <items xsi:type="scave:Add" filterPattern="run(General-17*) AND module(ClusterHead.world)" type="VECTOR"/>
+      <items xsi:type="scave:LineChart" name="Mensagens Acumuladas vel=0.01" lineNameFormat="${iterationvars} Nodes">
+        <filters xsi:type="scave:Select" filterPattern="&quot;Packets *&quot;" type="VECTOR"/>
+        <properties name="Graph.Title" value="Mensagens Acumuladas 0.01"/>
+      </items>
+      <items xsi:type="scave:Group" name="Por Tipo">
+        <items xsi:type="scave:LineChart" name="Por_Tipo_HEAD_vel_0.01" lineNameFormat="">
+          <filters xsi:type="scave:Select" filterPattern="&quot;Nodes Head&quot; " type="VECTOR"/>
+          <properties name="Graph.Title" value="HEADS x Tempo (vel=0.01)"/>
+          <properties name="X.Axis.Title" value="Tempo (s)"/>
+          <properties name="Y.Axis.Title" value="Número"/>
+          <properties name="Legend.Display" value="true"/>
+          <properties name="Legend.Border" value="true"/>
+          <properties name="Line.Name//ClusterHead/results/General-1.vec General-1-20120220-15:11:29-8319 1 $0=30, $1=30, $2=0.01mps" value="30 Nodes"/>
+          <properties name="Line.Name//ClusterHead/results/General-17.vec General-17-20120220-15:13:57-8327 17 $0=60, $1=60, $2=0.01mps" value="60 Nodes"/>
+          <properties name="Line.Name//ClusterHead/results/General-33.vec General-33-20120220-15:25:07-8349 33 $0=90, $1=90, $2=0.01mps" value="90 Nodes"/>
+          <properties name="Line.Name//ClusterHead/results/General-1.vec General-1-20120407-09:43:22-32600 1 $0=30, $1=30, $2=0.01mps" value="30 nodes"/>
+          <properties name="Line.Name//ClusterHead/results/General-17.vec General-17-20120407-10:18:53-33441 17 $0=60, $1=60, $2=0.01mps" value="60 Nodes"/>
+          <properties name="Line.Name//ClusterHead/results/General-33.vec General-33-20120407-12:27:23-36197 33 $0=90, $1=90, $2=0.01mps" value="90 Nodes"/>
+          <properties name="Line.Name//ClusterHead/results/General-1.vec General-1-20120510-00:20:56-36630 1 $0=30, $1=30, $2=0.01mps" value="30 Nodes"/>
+          <properties name="Line.Name//ClusterHead/results/General-17.vec General-17-20120510-00:41:19-42732 17 $0=60, $1=60, $2=0.01mps" value="60 Nodes"/>
+          <properties name="Line.Name//ClusterHead/results/General-33.vec General-33-20120510-01:54:59-64769 33 $0=90, $1=90, $2=0.01mps" value="90 Nodes"/>
+        </items>
+        <items xsi:type="scave:LineChart" name="Por_Tipo_Child_vel_0.01" lineNameFormat="">
+          <filters xsi:type="scave:Select" filterPattern="&quot;Nodes Child&quot; " type="VECTOR"/>
+          <properties name="Graph.Title" value="Childs x Tempo (vel=0.01)"/>
+          <properties name="Y.Axis.Title" value="Número"/>
+          <properties name="Legend.Display" value="true"/>
+          <properties name="Legend.Border" value="true"/>
+          <properties name="Line.Name//ClusterHead/results/General-1.vec General-1-20120220-15:11:29-8319 1 $0=30, $1=30, $2=0.01mps" value="30 Nodes"/>
+          <properties name="Line.Name//ClusterHead/results/General-17.vec General-17-20120220-15:13:57-8327 17 $0=60, $1=60, $2=0.01mps" value="60 Nodes"/>
+          <properties name="Line.Name//ClusterHead/results/General-33.vec General-33-20120220-15:25:07-8349 33 $0=90, $1=90, $2=0.01mps" value="90 Nodes"/>
+          <properties name="Line.Name//ClusterHead/results/General-1.vec General-1-20120407-09:43:22-32600 1 $0=30, $1=30, $2=0.01mps" value="30 Nodes"/>
+          <properties name="Line.Name//ClusterHead/results/General-17.vec General-17-20120407-10:18:53-33441 17 $0=60, $1=60, $2=0.01mps" value="60 Nodes"/>
+          <properties name="Line.Name//ClusterHead/results/General-33.vec General-33-20120407-12:27:23-36197 33 $0=90, $1=90, $2=0.01mps" value="90 Nodes"/>
+          <properties name="Line.Name//ClusterHead/results/General-1.vec General-1-20120510-00:20:56-36630 1 $0=30, $1=30, $2=0.01mps" value="30 Nodes"/>
+          <properties name="Line.Name//ClusterHead/results/General-17.vec General-17-20120510-00:41:19-42732 17 $0=60, $1=60, $2=0.01mps" value="60 Nodes"/>
+          <properties name="Line.Name//ClusterHead/results/General-33.vec General-33-20120510-01:54:59-64769 33 $0=90, $1=90, $2=0.01mps" value="90 Nodes"/>
+        </items>
+        <items xsi:type="scave:LineChart" name="Por_Tipo_Undef_vel_0.01" lineNameFormat="">
+          <filters xsi:type="scave:Select" filterPattern="&quot;Nodes Undef&quot;" type="VECTOR"/>
+          <properties name="Graph.Title" value="Nodes Undef x Tempo (vel=0.01)"/>
+          <properties name="Y.Axis.Title" value="Número"/>
+          <properties name="Legend.Display" value="true"/>
+          <properties name="Legend.Border" value="true"/>
+          <properties name="Line.Name//ClusterHead/results/General-1.vec General-1-20120220-15:11:29-8319 1 $0=30, $1=30, $2=0.01mps" value="30 Nodes"/>
+          <properties name="Line.Name//ClusterHead/results/General-17.vec General-17-20120220-15:13:57-8327 17 $0=60, $1=60, $2=0.01mps" value="60 Nodes"/>
+          <properties name="Line.Name//ClusterHead/results/General-33.vec General-33-20120220-15:25:07-8349 33 $0=90, $1=90, $2=0.01mps" value="90 Nodes"/>
+          <properties name="Line.Name//ClusterHead/results/General-1.vec General-1-20120407-09:43:22-32600 1 $0=30, $1=30, $2=0.01mps" value="30 Nodes"/>
+          <properties name="Line.Name//ClusterHead/results/General-17.vec General-17-20120407-10:18:53-33441 17 $0=60, $1=60, $2=0.01mps" value="60 Nodes"/>
+          <properties name="Line.Name//ClusterHead/results/General-33.vec General-33-20120407-12:27:23-36197 33 $0=90, $1=90, $2=0.01mps" value="90 Nodes"/>
+          <properties name="Line.Name//ClusterHead/results/General-33.vec General-33-20120510-01:54:59-64769 33 $0=90, $1=90, $2=0.01mps" value="90 Nodes"/>
+          <properties name="Line.Name//ClusterHead/results/General-17.vec General-17-20120510-00:41:19-42732 17 $0=60, $1=60, $2=0.01mps" value="60 Nodes"/>
+          <properties name="Line.Name//ClusterHead/results/General-1.vec General-1-20120510-00:20:56-36630 1 $0=30, $1=30, $2=0.01mps" value="30 Nodes"/>
+        </items>
+      </items>
+      <items xsi:type="scave:Group" name="Por numero">
+        <items xsi:type="scave:LineChart" name="Por_Numero_30_vel_0.01" lineNameFormat="">
+          <filters xsi:type="scave:Select" filterPattern="run(General-1-*) and &quot;Nodes *&quot; " type="VECTOR"/>
+          <properties name="Graph.Title" value="Tipo x Tempo  (30 Nodes, vel=0.01)"/>
+          <properties name="X.Axis.Title" value="Tempo (s)"/>
+          <properties name="Y.Axis.Title" value="Número"/>
+          <properties name="Legend.Display" value="true"/>
+          <properties name="Legend.Border" value="true"/>
+        </items>
+        <items xsi:type="scave:LineChart" name="Por_Numero_60_vel_0.01" lineNameFormat="">
+          <filters xsi:type="scave:Select" filterPattern="run(General-17-*) and &quot;Nodes *&quot; " type="VECTOR"/>
+          <properties name="Graph.Title" value="Tipo x Tempo  (60 Nodes, vel=0.01)"/>
+          <properties name="X.Axis.Title" value="Tempo (s)"/>
+          <properties name="Y.Axis.Title" value="Número"/>
+          <properties name="Legend.Display" value="true"/>
+          <properties name="Legend.Border" value="true"/>
+        </items>
+        <items xsi:type="scave:LineChart" name="Por_Numero_90_vel_0.01" lineNameFormat="">
+          <filters xsi:type="scave:Select" filterPattern="run(General-33-*) and &quot;Nodes *&quot; " type="VECTOR"/>
+          <properties name="Graph.Title" value="Tipo x Tempo  (90 Nodes, vel=0.01)"/>
+          <properties name="X.Axis.Title" value="Tempo (s)"/>
+          <properties name="Y.Axis.Title" value="Número"/>
+          <properties name="Legend.Display" value="true"/>
+          <properties name="Legend.Border" value="true"/>
+        </items>
+      </items>
+    </datasets>
+    <datasets name="Movendo 0.1">
+      <items xsi:type="scave:Add" filterPattern="run(General-2-*) AND module(ClusterHead.world)" type="VECTOR"/>
+      <items xsi:type="scave:Add" filterPattern="run(General-18*) AND module(ClusterHead.world) " type="VECTOR"/>
+      <items xsi:type="scave:Add" filterPattern="run(General-34*) AND module(ClusterHead.world)" type="VECTOR"/>
+      <items xsi:type="scave:Group" name="Por Tipo">
+        <items xsi:type="scave:LineChart" name="Por_Tipo_HEAD_vel_0.1" lineNameFormat="">
+          <filters xsi:type="scave:Select" filterPattern="&quot;Nodes Head&quot; " type="VECTOR"/>
+          <properties name="Graph.Title" value="HEADS x Tempo (vel=0.1)"/>
+          <properties name="X.Axis.Title" value="Tempo (s)"/>
+          <properties name="Y.Axis.Title" value="Número"/>
+          <properties name="Legend.Display" value="true"/>
+          <properties name="Legend.Border" value="true"/>
+          <properties name="Line.Name//ClusterHead/results/General-2.vec General-2-20120220-15:12:21-8324 2 $0=30, $1=30, $2=0.1mps" value="30 Nodes"/>
+          <properties name="Line.Name//ClusterHead/results/General-18.vec General-18-20120220-15:18:04-8331 18 $0=60, $1=60, $2=0.1mps" value="60 Nodes"/>
+          <properties name="Line.Name//ClusterHead/results/General-34.vec General-34-20120220-15:34:58-8364 34 $0=90, $1=90, $2=0.1mps" value="90 Nodes"/>
+          <properties name="Line.Name//ClusterHead/results/General-18.vec General-18-20120407-11:02:03-34465 18 $0=60, $1=60, $2=0.1mps" value="30 Nodes"/>
+          <properties name="Line.Name//ClusterHead/results/General-2.vec General-2-20120407-09:55:41-32895 2 $0=30, $1=30, $2=0.1mps" value="60 Nodes"/>
+          <properties name="Line.Name//ClusterHead/results/General-34.vec General-34-20120407-14:52:25-39415 34 $0=90, $1=90, $2=0.1mps" value="90 Nodes"/>
+          <properties name="Line.Name//ClusterHead/results/General-18.vec General-18-20120510-01:07:17-50496 18 $0=60, $1=60, $2=0.1mps" value="60 Nodes"/>
+          <properties name="Line.Name//ClusterHead/results/General-2.vec General-2-20120510-00:28:17-38826 2 $0=30, $1=30, $2=0.1mps" value="30 Nodes"/>
+          <properties name="Line.Name//ClusterHead/results/General-34.vec General-34-20120510-03:09:14-86987 34 $0=90, $1=90, $2=0.1mps" value="90 Nodes"/>
+        </items>
+        <items xsi:type="scave:LineChart" name="Por_Tipo_Child_vel_0.1" lineNameFormat="">
+          <filters xsi:type="scave:Select" filterPattern="&quot;Nodes Child&quot; " type="VECTOR"/>
+          <properties name="Graph.Title" value="Childs x Tempo (vel=0.1)"/>
+          <properties name="Y.Axis.Title" value="Número"/>
+          <properties name="Legend.Display" value="true"/>
+          <properties name="Legend.Border" value="true"/>
+          <properties name="Line.Name//ClusterHead/results/General-2.vec General-2-20120220-15:12:21-8324 2 $0=30, $1=30, $2=0.1mps" value="30 Nodes"/>
+          <properties name="Line.Name//ClusterHead/results/General-18.vec General-18-20120220-15:18:04-8331 18 $0=60, $1=60, $2=0.1mps" value="60 Nodes"/>
+          <properties name="Line.Name//ClusterHead/results/General-34.vec General-34-20120220-15:34:58-8364 34 $0=90, $1=90, $2=0.1mps" value="90 Nodes"/>
+          <properties name="Line.Name//ClusterHead/results/General-34.vec General-34-20120407-14:52:25-39415 34 $0=90, $1=90, $2=0.1mps" value="90 Nodes"/>
+          <properties name="Line.Name//ClusterHead/results/General-2.vec General-2-20120407-09:55:41-32895 2 $0=30, $1=30, $2=0.1mps" value="60 Nodes"/>
+          <properties name="Line.Name//ClusterHead/results/General-18.vec General-18-20120407-11:02:03-34465 18 $0=60, $1=60, $2=0.1mps" value="30 Nodes"/>
+          <properties name="Line.Name//ClusterHead/results/General-34.vec General-34-20120510-03:09:14-86987 34 $0=90, $1=90, $2=0.1mps" value="90 Nodes"/>
+          <properties name="Line.Name//ClusterHead/results/General-2.vec General-2-20120510-00:28:17-38826 2 $0=30, $1=30, $2=0.1mps" value="30 Nodes"/>
+          <properties name="Line.Name//ClusterHead/results/General-18.vec General-18-20120510-01:07:17-50496 18 $0=60, $1=60, $2=0.1mps" value="60 Nodes"/>
+        </items>
+        <items xsi:type="scave:LineChart" name="Por_Tipo_Undef_vel_0.1" lineNameFormat="">
+          <filters xsi:type="scave:Select" filterPattern="&quot;Nodes Undef&quot;" type="VECTOR"/>
+          <properties name="Graph.Title" value="Nodes Undef x Tempo (vel=0.1)"/>
+          <properties name="Y.Axis.Title" value="Número"/>
+          <properties name="Legend.Display" value="true"/>
+          <properties name="Legend.Border" value="true"/>
+          <properties name="Line.Name//ClusterHead/results/General-2.vec General-2-20120220-15:12:21-8324 2 $0=30, $1=30, $2=0.1mps" value="30 Nodes"/>
+          <properties name="Line.Name//ClusterHead/results/General-18.vec General-18-20120220-15:18:04-8331 18 $0=60, $1=60, $2=0.1mps" value="60 Nodes"/>
+          <properties name="Line.Name//ClusterHead/results/General-34.vec General-34-20120220-15:34:58-8364 34 $0=90, $1=90, $2=0.1mps" value="90 Nodes"/>
+          <properties name="Line.Name//ClusterHead/results/General-34.vec General-34-20120407-14:52:25-39415 34 $0=90, $1=90, $2=0.1mps" value="90 Nodes"/>
+          <properties name="Line.Name//ClusterHead/results/General-2.vec General-2-20120407-09:55:41-32895 2 $0=30, $1=30, $2=0.1mps" value="60 Nodes"/>
+          <properties name="Line.Name//ClusterHead/results/General-18.vec General-18-20120407-11:02:03-34465 18 $0=60, $1=60, $2=0.1mps" value="30 Nodes"/>
+          <properties name="Line.Name//ClusterHead/results/General-18.vec General-18-20120510-01:07:17-50496 18 $0=60, $1=60, $2=0.1mps" value="60 Nodes"/>
+          <properties name="Line.Name//ClusterHead/results/General-2.vec General-2-20120510-00:28:17-38826 2 $0=30, $1=30, $2=0.1mps" value="30 Nodes"/>
+          <properties name="Line.Name//ClusterHead/results/General-34.vec General-34-20120510-03:09:14-86987 34 $0=90, $1=90, $2=0.1mps" value="90 Nodes"/>
+        </items>
+      </items>
+      <items xsi:type="scave:Group" name="Por numero">
+        <items xsi:type="scave:LineChart" name="Por_Numero_30_vel_0.1" lineNameFormat="">
+          <filters xsi:type="scave:Select" filterPattern="run(General-2-*) and &quot;Nodes *&quot; " type="VECTOR"/>
+          <properties name="Graph.Title" value="Tipo x Tempo (30 Nodes, vel=0.1)"/>
+          <properties name="X.Axis.Title" value="Tempo (s)"/>
+          <properties name="Y.Axis.Title" value="Número"/>
+          <properties name="Legend.Display" value="true"/>
+          <properties name="Legend.Border" value="true"/>
+        </items>
+        <items xsi:type="scave:LineChart" name="Por_Numero_60_vel_0.1" lineNameFormat="">
+          <filters xsi:type="scave:Select" filterPattern="run(General-18-*) and &quot;Nodes *&quot; " type="VECTOR"/>
+          <properties name="Graph.Title" value="Tipo x Tempo (60 Nodes, vel=0.1)"/>
+          <properties name="X.Axis.Title" value="Tempo (s)"/>
+          <properties name="Y.Axis.Title" value="Número"/>
+          <properties name="Legend.Display" value="true"/>
+          <properties name="Legend.Border" value="true"/>
+        </items>
+        <items xsi:type="scave:LineChart" name="Por_Numero_90_vel_0.1" lineNameFormat="">
+          <filters xsi:type="scave:Select" filterPattern="run(General-34-*) and &quot;Nodes *&quot; " type="VECTOR"/>
+          <properties name="Graph.Title" value="Tipo x Tempo (90 Nodes, vel=0.1)"/>
+          <properties name="X.Axis.Title" value="Tempo (s)"/>
+          <properties name="Y.Axis.Title" value="Número"/>
+          <properties name="Legend.Display" value="true"/>
+          <properties name="Legend.Border" value="true"/>
+        </items>
+      </items>
+      <items xsi:type="scave:LineChart" name="Mensagens Acumuladas vel=0.1" lineNameFormat="">
+        <filters xsi:type="scave:Select" filterPattern="&quot;Packets *&quot;" type="VECTOR"/>
+        <properties name="Graph.Title" value="Mensagens Acumuladas vel=0.1"/>
+      </items>
+      <items xsi:type="scave:BarChart" name="Packets por segundo">
+        <filters xsi:type="scave:Select" filterPattern="Packets Received" type="VECTOR"/>
+      </items>
+    </datasets>
+    <datasets name="Movendo 0.5">
+      <items xsi:type="scave:Add" filterPattern="run(General-3-*) AND module(ClusterHead.world) " type="VECTOR"/>
+      <items xsi:type="scave:Add" filterPattern="run(General-35*) AND module(ClusterHead.world)" type="VECTOR"/>
+      <items xsi:type="scave:Add" filterPattern="run(General-19*) AND module(ClusterHead.world)" type="VECTOR"/>
+      <items xsi:type="scave:LineChart" name="Mensagens Acumuladas vel=0.5" lineNameFormat="">
+        <filters xsi:type="scave:Select" filterPattern="Packets*" type="VECTOR"/>
+        <properties name="Graph.Title" value="Mensagens Acumuladas vel=0.5"/>
+      </items>
+      <items xsi:type="scave:Group" name="Por Tipo">
+        <items xsi:type="scave:LineChart" name="Por_Tipo_HEAD_vel_0.5" lineNameFormat="">
+          <filters xsi:type="scave:Select" filterPattern="&quot;Nodes Head&quot; " type="VECTOR"/>
+          <properties name="Graph.Title" value="HEADS x Tempo (vel=0.5)"/>
+          <properties name="X.Axis.Title" value="Tempo (s)"/>
+          <properties name="Y.Axis.Title" value="Número"/>
+          <properties name="Legend.Display" value="true"/>
+          <properties name="Legend.Border" value="true"/>
+          <properties name="Line.Name//ClusterHead/results/General-3.vec General-3-20120220-15:13:11-8325 3 $0=30, $1=30, $2=0.5mps" value="30 Nodes"/>
+          <properties name="Line.Name//ClusterHead/results/General-19.vec General-19-20120220-15:21:50-8344 19 $0=60, $1=60, $2=0.5mps" value="60 Nodes"/>
+          <properties name="Line.Name//ClusterHead/results/General-35.vec General-35-20120220-15:43:49-8452 35 $0=90, $1=90, $2=0.5mps" value="90 Nodes"/>
+          <properties name="Line.Name//ClusterHead/results/General-35.vec General-35-20120408-23:31:50-41252 35 $0=90, $1=90, $2=0.5mps" value="90 Nodes"/>
+          <properties name="Line.Name//ClusterHead/results/General-3.vec General-3-20120407-10:07:33-33172 3 $0=30, $1=30, $2=0.5mps" value="60 Nodes"/>
+          <properties name="Line.Name//ClusterHead/results/General-19.vec General-19-20120407-11:47:21-35469 19 $0=60, $1=60, $2=0.5mps" value="30 Nodes"/>
+          <properties name="Line.Name//ClusterHead/results/General-19.vec General-19-20120510-01:32:46-58115 19 $0=60, $1=60, $2=0.5mps" value="60 Nodes"/>
+          <properties name="Line.Name//ClusterHead/results/General-3.vec General-3-20120510-00:34:58-40833 3 $0=30, $1=30, $2=0.5mps" value="30 Nodes"/>
+          <properties name="Line.Name//ClusterHead/results/General-35.vec General-35-20120510-04:21:05-8661 35 $0=90, $1=90, $2=0.5mps" value="90 Nodes"/>
+        </items>
+        <items xsi:type="scave:LineChart" name="Por_Tipo_Child_vel_0.5" lineNameFormat="">
+          <filters xsi:type="scave:Select" filterPattern="&quot;Nodes Child&quot; " type="VECTOR"/>
+          <properties name="Graph.Title" value="Childs x Tempo (vel=0.5)"/>
+          <properties name="Y.Axis.Title" value="Número"/>
+          <properties name="Legend.Display" value="true"/>
+          <properties name="Legend.Border" value="true"/>
+          <properties name="Line.Name//ClusterHead/results/General-3.vec General-3-20120220-15:13:11-8325 3 $0=30, $1=30, $2=0.5mps" value="30 Nodes"/>
+          <properties name="Line.Name//ClusterHead/results/General-19.vec General-19-20120220-15:21:50-8344 19 $0=60, $1=60, $2=0.5mps" value="60 Nodes"/>
+          <properties name="Line.Name//ClusterHead/results/General-35.vec General-35-20120220-15:43:49-8452 35 $0=90, $1=90, $2=0.5mps" value="90 Nodes"/>
+          <properties name="Line.Name//ClusterHead/results/General-19.vec General-19-20120407-11:47:21-35469 19 $0=60, $1=60, $2=0.5mps" value="30 Nodes"/>
+          <properties name="Line.Name//ClusterHead/results/General-3.vec General-3-20120407-10:07:33-33172 3 $0=30, $1=30, $2=0.5mps" value="60 Nodes"/>
+          <properties name="Line.Name//ClusterHead/results/General-35.vec General-35-20120408-23:31:50-41252 35 $0=90, $1=90, $2=0.5mps" value="90 Nodes"/>
+          <properties name="Line.Name//ClusterHead/results/General-19.vec General-19-20120510-01:32:46-58115 19 $0=60, $1=60, $2=0.5mps" value="60 Nodes"/>
+          <properties name="Line.Name//ClusterHead/results/General-3.vec General-3-20120510-00:34:58-40833 3 $0=30, $1=30, $2=0.5mps" value="30 Nodes"/>
+          <properties name="Line.Name//ClusterHead/results/General-35.vec General-35-20120510-04:21:05-8661 35 $0=90, $1=90, $2=0.5mps" value="90 Nodes"/>
+          <properties name="Line.Name" value="$0 Nodes"/>
+        </items>
+        <items xsi:type="scave:LineChart" name="Por_Tipo_Undef_vel_0.5" lineNameFormat="">
+          <filters xsi:type="scave:Select" filterPattern="&quot;Nodes Undef&quot;" type="VECTOR"/>
+          <properties name="Graph.Title" value="Nodes Undef x Tempo (vel=0.5)"/>
+          <properties name="Y.Axis.Title" value="Número"/>
+          <properties name="Legend.Display" value="true"/>
+          <properties name="Legend.Border" value="true"/>
+          <properties name="Line.Name//ClusterHead/results/General-3.vec General-3-20120220-15:13:11-8325 3 $0=30, $1=30, $2=0.5mps" value="30 Nodes"/>
+          <properties name="Line.Name//ClusterHead/results/General-19.vec General-19-20120220-15:21:50-8344 19 $0=60, $1=60, $2=0.5mps" value="60 Nodes"/>
+          <properties name="Line.Name//ClusterHead/results/General-35.vec General-35-20120220-15:43:49-8452 35 $0=90, $1=90, $2=0.5mps" value="90 Nodes"/>
+          <properties name="Line.Name//ClusterHead/results/General-35.vec General-35-20120408-23:31:50-41252 35 $0=90, $1=90, $2=0.5mps" value="90 Nodes"/>
+          <properties name="Line.Name//ClusterHead/results/General-3.vec General-3-20120407-10:07:33-33172 3 $0=30, $1=30, $2=0.5mps" value="60 Nodes"/>
+          <properties name="Line.Name//ClusterHead/results/General-19.vec General-19-20120407-11:47:21-35469 19 $0=60, $1=60, $2=0.5mps" value="30 Nodes"/>
+          <properties name="Line.Name//ClusterHead/results/General-19.vec General-19-20120510-01:32:46-58115 19 $0=60, $1=60, $2=0.5mps" value="60 Nodes"/>
+          <properties name="Line.Name//ClusterHead/results/General-3.vec General-3-20120510-00:34:58-40833 3 $0=30, $1=30, $2=0.5mps" value="30 Nodes"/>
+          <properties name="Line.Name//ClusterHead/results/General-35.vec General-35-20120510-04:21:05-8661 35 $0=90, $1=90, $2=0.5mps" value="90 Nodes"/>
+        </items>
+      </items>
+      <items xsi:type="scave:Group" name="Por numero">
+        <items xsi:type="scave:LineChart" name="Por_Numero_30_vel_0.5" lineNameFormat="">
+          <filters xsi:type="scave:Select" filterPattern="run(General-3-*) and &quot;Nodes *&quot; " type="VECTOR"/>
+          <properties name="Graph.Title" value="Tipo x Tempo  (30 Nodes, vel=0.5)"/>
+          <properties name="X.Axis.Title" value="Tempo (s)"/>
+          <properties name="Y.Axis.Title" value="Número"/>
+          <properties name="Legend.Display" value="true"/>
+          <properties name="Legend.Border" value="true"/>
+        </items>
+        <items xsi:type="scave:LineChart" name="Por_Numero_60_vel_0.5" lineNameFormat="">
+          <filters xsi:type="scave:Select" filterPattern="run(General-19-*) and &quot;Nodes *&quot; " type="VECTOR"/>
+          <properties name="Graph.Title" value="Tipo x Tempo  (60 Nodes, vel=0.5)"/>
+          <properties name="X.Axis.Title" value="Tempo (s)"/>
+          <properties name="Y.Axis.Title" value="Número"/>
+          <properties name="Legend.Display" value="true"/>
+          <properties name="Legend.Border" value="true"/>
+        </items>
+        <items xsi:type="scave:LineChart" name="Por_Numero_90_vel_0.5" lineNameFormat="">
+          <filters xsi:type="scave:Select" filterPattern="run(General-35-*) and &quot;Nodes *&quot; " type="VECTOR"/>
+          <properties name="Graph.Title" value="Tipo x Tempo  (90 Nodes, vel=0.5)"/>
+          <properties name="X.Axis.Title" value="Tempo (s)"/>
+          <properties name="Y.Axis.Title" value="Número"/>
+          <properties name="Legend.Display" value="true"/>
+          <properties name="Legend.Border" value="true"/>
+        </items>
+      </items>
+    </datasets>
+  </datasets>
+  <chartSheets>
+    <chartSheets name="default" charts="//@datasets/@datasets.2/@items.6"/>
+    <chartSheets name="90 Nodes" charts="//@datasets/@datasets.0/@items.4/@items.2 //@datasets/@datasets.1/@items.5/@items.2 //@datasets/@datasets.2/@items.4/@items.2 //@datasets/@datasets.3/@items.5/@items.2"/>
+    <chartSheets name="60 Nodes" charts="//@datasets/@datasets.0/@items.4/@items.1 //@datasets/@datasets.1/@items.5/@items.1 //@datasets/@datasets.2/@items.4/@items.1 //@datasets/@datasets.3/@items.5/@items.1"/>
+    <chartSheets name="30 Nodes" charts="//@datasets/@datasets.0/@items.4/@items.0 //@datasets/@datasets.1/@items.5/@items.0 //@datasets/@datasets.2/@items.4/@items.0 //@datasets/@datasets.3/@items.5/@items.0"/>
+    <chartSheets name="Por Tipo vel:0.0" charts="//@datasets/@datasets.0/@items.3/@items.0 //@datasets/@datasets.0/@items.3/@items.1 //@datasets/@datasets.0/@items.3/@items.2"/>
+    <chartSheets name="Por Tipo vel:0.01" charts="//@datasets/@datasets.1/@items.4/@items.0 //@datasets/@datasets.1/@items.4/@items.1 //@datasets/@datasets.1/@items.4/@items.2"/>
+    <chartSheets name="Por Tipo vel:0.1" charts="//@datasets/@datasets.2/@items.3/@items.1 //@datasets/@datasets.2/@items.3/@items.0 //@datasets/@datasets.2/@items.3/@items.2"/>
+    <chartSheets name="Por Tipo vel:0.5" charts="//@datasets/@datasets.3/@items.4/@items.1 //@datasets/@datasets.3/@items.4/@items.0 //@datasets/@datasets.3/@items.4/@items.2"/>
+    <chartSheets name="Mensagens" charts="//@datasets/@datasets.2/@items.5 //@datasets/@datasets.1/@items.3 //@datasets/@datasets.3/@items.3"/>
+  </chartSheets>
+</scave:Analysis>

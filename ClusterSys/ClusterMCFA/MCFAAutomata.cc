@@ -131,8 +131,6 @@ double MCFAAutomata::RM(MobInfo *a, MobInfo *b){
 }
 
 int MCFAAutomata::randNeigh(){
-	 /* initialize random seed: */
-	  srand ( time(NULL) );
 
 	  /* generate secret number: */
 	  int rn = rand() % ActionSet.size();

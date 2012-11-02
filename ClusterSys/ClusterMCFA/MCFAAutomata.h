@@ -25,7 +25,7 @@ enum ClusterNodeStates{
 };
 
 
-typedef struct {double speed; double direction;} MobInfo;
+typedef struct MobInfo {double speed; double direction;} MobInfo;
 typedef struct ActionSetData {double Probability; double ERMt; MobInfo *Mobility;};
 
 class MCFAAutomata {
