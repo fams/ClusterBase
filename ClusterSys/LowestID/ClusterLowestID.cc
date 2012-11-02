@@ -302,8 +302,6 @@ void ClusterLowestID::handleClusterMessage(ClusterLowestIdPkt* m){
 	                if(msgType== CLUSTER_JOIN){
 	                    //Adicionando na lista de filhotes
 	                    addChild(m->getSrcAddr());
-	                    //childs.push_back(m->getSrcAddr());
-	                    //axChilds = childs.size();
 	                    //Envia Mensagem de JoinAccept
 	                    ClusterLowestIdPkt *pkt = new ClusterLowestIdPkt("DIRECT: CLUSTER_ACCEPTED:", CLUSTER_FORMATION_PACKET);
 	                    setPktValues(pkt, CLUSTER_ACCEPTED, m->getSrcAddr(), myAddress);
@@ -318,6 +316,7 @@ void ClusterLowestID::handleClusterMessage(ClusterLowestIdPkt* m){
 
 	case CLUSTER_REJOIN:{
 		if(getCurrentRole() == HEAD_NODE){
+
 			ClusterLowestIdPkt *pkt = new ClusterLowestIdPkt("BROADCAST: CLUSTER_INIT", CLUSTER_FORMATION_PACKET);
 			setPktValues(pkt , CLUSTER_INIT, myAddress, myAddress);
 			sendDirectMessage(pkt,m->getSrcAddr());
