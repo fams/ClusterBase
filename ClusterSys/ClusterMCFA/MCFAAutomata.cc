@@ -137,6 +137,10 @@ int MCFAAutomata::randNeigh(){
 	  return ActionSet[rn];
 }
 
+int MCFAAutomata::getNeigh(int node){
+    return ActionSet[node];
+}
+
 int MCFAAutomata::getDegree(){
 	return (ActionSet.size() - 1) ;
 

@@ -36,7 +36,7 @@ class ClusterMCFA : public ClusterManager
 {
 
 	MCFAAutomata *Automata;
-	std::map<int,double> ERMi;
+	std::map<int,double> ERMi; //ERM dos nodes
 
 	/** Statistics */
 	//simsignal_t changeTypeSignal;
@@ -51,6 +51,8 @@ public:
 		SEND_ASFREQ = LAST_BASE_CLUSTER_MESSAGE_KIND, //Send Action Set Formation Cluster
 
 		INIT_MCFA,	//Init Cluster Formation
+
+		GET_RERM,
 
 		PROC_MCFA,	//Processa Formacao
 

@@ -44,8 +44,9 @@ void ClusterMCFA::initialize(int stage) {
 
         //Parameters
         //Tempo para esperar por formar o ActionSet
-        asfreqTime  = par("asfreqTime"); //Receive Asfreq
+        asfreqTime  = par("asfreqTime");
 
+        //Receive Asfreq
         resetTime   = par("resetTime");
 
         rermTimeout = par("rermTimeout");
@@ -125,7 +126,7 @@ void ClusterMCFA::handleReset(cMessage *msg) {
     clusterNodeState = UNDEFINED;
     currStage = 0;
 
-    bubble("Reseting");
+    findHost()->bubble("Reseting");
     //Display String
     char* tt = new char(20);
     sprintf(tt, "MyAddr is %i", myAddress);
@@ -163,6 +164,7 @@ void ClusterMCFA::handleSelfMsg(cMessage *msg) {
         double lastSpeed = gps.getSpeed();
         double lastDirection = gps.getDirection();
         gps.updatePos(&HostCoor);
+        debugEV << "LastSpeed: " << lastSpeed << " actualSpeed: " << gps.getSpeed() << "\n";
         if (((lastSpeed != gps.getSpeed())
                 || (lastDirection != gps.getDirection()))
                 && clusterNodeState > ACTSETFORM) {
@@ -178,7 +180,7 @@ void ClusterMCFA::handleSelfMsg(cMessage *msg) {
             sendMobInfo();
         }
         cancelEvent(sendMobTimer);
-        scheduleAt(simTime() + 4, sendMobTimer);
+        scheduleAt(simTime() + gpsInterval, sendMobTimer);
         //cancelAndDelete(sendMobTimer);
     }
         break;
@@ -211,9 +213,19 @@ void ClusterMCFA::handleSelfMsg(cMessage *msg) {
         clusterNodeState = HEADSELECT;
         double myp = Automata->initProb();
         debugEV << "P inicial de: " << myp <<  " Nodes " << Automata->getDegree() << endl;
+
         MCF();
         delayTimer = new cMessage("PROC_MCFA", PROC_MCFA2);
         scheduleAt(simTime() + rermTimeout, delayTimer);
+    }
+    break;
+    case GET_RERM:{
+        //Monta o ERMt
+            debugEV << "Enviando RERM para" << ch << endl;
+            ClusterMCFAPkt *pkt = new ClusterMCFAPkt("DirectCast RERM",
+                    MCFA_CTRL);
+            pkt->setMsgtype(MCFA_RERM);
+            sendBroadcast(pkt);
     }
         break;
     case PROC_MCFA:{
@@ -298,7 +310,7 @@ void ClusterMCFA::handleMCFAControl(ClusterMCFAPkt *m) {
             MCF();
             delayTimer = new cMessage("delay-timer", PROC_MCFA2);
             scheduleAt(simTime() + 2, delayTimer);
-        } else {
+        } else if(m->getERM() == 0){
             debugEV << "Respondendo RERM: De:" << myAddress << " --> "
                     << m->getSrcAddr() << endl;
             ClusterMCFAPkt *pkt = new ClusterMCFAPkt("DirectCast RERM",
@@ -306,6 +318,10 @@ void ClusterMCFA::handleMCFAControl(ClusterMCFAPkt *m) {
             pkt->setMsgtype(MCFA_RERM);
             pkt->setERM(Automata->getERMt());
             sendDirectMessage(pkt, m->getSrcAddr());
+        }else if(m->getERM() != 0){
+            int id  = m->getSrcAddr();
+            w = m->getERM();
+            ERMi[id] = w;
         }
     }
         break;
@@ -373,7 +389,9 @@ int ClusterMCFA::MCF() {
         debugEV << "it = " << (*it).second << endl;
         ERMk += (*it).second;
     }
-    T = ERMk / (Automata->getDegree() + 1);
+    //ERMk += Automata->getERMt();
+    //T = ERMk / (Automata->getDegree() + 1);
+    T = ERMk / ERMi.size();
     debugEV << "Novo ERMk eh: " << ERMk << endl;
 
     //T = ((T*stageK)+Automata->getERMt()/stageK);

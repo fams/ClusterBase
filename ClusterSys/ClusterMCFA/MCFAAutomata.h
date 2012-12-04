@@ -56,6 +56,7 @@ public:
 
 	/** @brief return a random neighborh*/
 	int randNeigh();
+	int getNeigh(int node);
  /** New Epoch */
 	void newEpoch(int node,MobInfo* myMob,  MobInfo* mi);
 
