@@ -28,6 +28,7 @@ INCLUDE_PATH = \
     -I. \
     -IClusterMCFA \
     -ILowestID \
+    -IRealLowestID \
     -Ibase \
     -Ibase/messages \
     -Idoc \
@@ -56,12 +57,14 @@ OBJS = \
     $O/ClusterMCFA/ClusterMCFA.o \
     $O/ClusterMCFA/MCFAAutomata.o \
     $O/LowestID/ClusterLowestID.o \
+    $O/RealLowestID/RealLowestID.o \
     $O/base/ClusterManager.o \
     $O/base/ClusterNetNetl.o \
     $O/base/IClusterManger.o \
     $O/base/WorldUtilityStatsCluster.o \
     $O/ClusterMCFA/ClusterMCFAPkt_m.o \
     $O/LowestID/ClusterLowestIdPkt_m.o \
+    $O/RealLowestID/RealLowestIDPkt_m.o \
     $O/base/messages/ClusterPkt_m.o \
     $O/base/messages/NetwPkt_m.o
 
@@ -69,6 +72,7 @@ OBJS = \
 MSGFILES = \
     ClusterMCFA/ClusterMCFAPkt.msg \
     LowestID/ClusterLowestIdPkt.msg \
+    RealLowestID/RealLowestIDPkt.msg \
     base/messages/ClusterPkt.msg \
     base/messages/NetwPkt.msg
 
@@ -146,6 +150,7 @@ clean:
 	-rm -f ./*_m.cc ./*_m.h
 	-rm -f ClusterMCFA/*_m.cc ClusterMCFA/*_m.h
 	-rm -f LowestID/*_m.cc LowestID/*_m.h
+	-rm -f RealLowestID/*_m.cc RealLowestID/*_m.h
 	-rm -f base/*_m.cc base/*_m.h
 	-rm -f base/messages/*_m.cc base/messages/*_m.h
 	-rm -f doc/*_m.cc doc/*_m.h
@@ -161,7 +166,7 @@ cleanall: clean
 	-rm -rf $(PROJECT_OUTPUT_DIR)
 
 depend:
-	$(MAKEDEPEND) $(INCLUDE_PATH) -f Makefile -P\$$O/ -- $(MSG_CC_FILES)  ./*.cc ClusterMCFA/*.cc LowestID/*.cc base/*.cc base/messages/*.cc doc/*.cc doc/doxy/*.cc doc/doxy/search/*.cc doc/neddoc/*.cc html/*.cc html/search/*.cc latex/*.cc results/*.cc
+	$(MAKEDEPEND) $(INCLUDE_PATH) -f Makefile -P\$$O/ -- $(MSG_CC_FILES)  ./*.cc ClusterMCFA/*.cc LowestID/*.cc RealLowestID/*.cc base/*.cc base/messages/*.cc doc/*.cc doc/doxy/*.cc doc/doxy/search/*.cc doc/neddoc/*.cc html/*.cc html/search/*.cc latex/*.cc results/*.cc
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 $O/ClusterMCFA/ClusterMCFA.o: ClusterMCFA/ClusterMCFA.cc \
@@ -233,6 +238,35 @@ $O/LowestID/ClusterLowestID.o: LowestID/ClusterLowestID.cc \
 	$(MIXIM_PROJ)/src/modules/utility/Packet.h
 $O/LowestID/ClusterLowestIdPkt_m.o: LowestID/ClusterLowestIdPkt_m.cc \
 	LowestID/ClusterLowestIdPkt_m.h \
+	base/messages/ClusterPkt_m.h \
+	$(MIXIM_PROJ)/src/base/messages/ApplPkt_m.h \
+	$(MIXIM_PROJ)/src/base/utils/MiXiMDefs.h \
+	$(MIXIM_PROJ)/src/base/utils/SimpleAddress.h \
+	$(MIXIM_PROJ)/src/base/utils/miximkerneldefs.h
+$O/RealLowestID/RealLowestID.o: RealLowestID/RealLowestID.cc \
+	RealLowestID/RealLowestID.h \
+	RealLowestID/RealLowestIDPkt_m.h \
+	base/ClusterManager.h \
+	base/ClusterNodeProperties.h \
+	base/messages/ClusterPkt_m.h \
+	$(MIXIM_PROJ)/src/base/messages/ApplPkt_m.h \
+	$(MIXIM_PROJ)/src/base/modules/AddressingInterface.h \
+	$(MIXIM_PROJ)/src/base/modules/BaseApplLayer.h \
+	$(MIXIM_PROJ)/src/base/modules/BaseBattery.h \
+	$(MIXIM_PROJ)/src/base/modules/BaseLayer.h \
+	$(MIXIM_PROJ)/src/base/modules/BaseModule.h \
+	$(MIXIM_PROJ)/src/base/modules/BaseNetwLayer.h \
+	$(MIXIM_PROJ)/src/base/modules/BatteryAccess.h \
+	$(MIXIM_PROJ)/src/base/utils/FindModule.h \
+	$(MIXIM_PROJ)/src/base/utils/HostState.h \
+	$(MIXIM_PROJ)/src/base/utils/MiXiMDefs.h \
+	$(MIXIM_PROJ)/src/base/utils/NetwControlInfo.h \
+	$(MIXIM_PROJ)/src/base/utils/PassedMessage.h \
+	$(MIXIM_PROJ)/src/base/utils/SimpleAddress.h \
+	$(MIXIM_PROJ)/src/base/utils/miximkerneldefs.h \
+	$(MIXIM_PROJ)/src/modules/utility/Packet.h
+$O/RealLowestID/RealLowestIDPkt_m.o: RealLowestID/RealLowestIDPkt_m.cc \
+	RealLowestID/RealLowestIDPkt_m.h \
 	base/messages/ClusterPkt_m.h \
 	$(MIXIM_PROJ)/src/base/messages/ApplPkt_m.h \
 	$(MIXIM_PROJ)/src/base/utils/MiXiMDefs.h \

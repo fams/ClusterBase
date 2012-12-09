@@ -237,18 +237,21 @@ void ClusterManager::setCurrentPhase(NodePhase newPhase)
 void ClusterManager::setCurrentRole(NodeRole newRole)
 {
     //Publica Mudanca de Role
-    ClusterStatisticsPacket c(newRole,currentRole);
-    emit(catClusterNodeStatsSignal, &c);
-
+    //ClusterStatisticsPacket c(newRole,currentRole);
+    //emit(catClusterNodeStatsSignal, &c);
+    //double lt=0;
+    simtime_t lifetime = 0;
     //Se deixou de ser head, notificar
     if(newRole != currentRole){
         if(currentRole == HEAD_NODE){
-            simtime_t lifetime;
-            lifetime = simTime() = lastRoleChange;
+            //simtime_t lifetime;
+            lifetime = simTime() - lastRoleChange;
             recClusterLifeTime.record(lifetime);
         }
         lastRoleChange = simTime();
     }
+    ClusterStatisticsPacket c(newRole,currentRole,lifetime);
+    emit(catClusterNodeStatsSignal, &c);
     currentRole = newRole;
     changeNodeIcon(newRole);
 }
@@ -331,7 +334,9 @@ void ClusterManager::handlePolling(cMessage *msg){
         break;
         default:
             debugEV << "Type Not Handled" << endl;
-        }//switch(nodeType){
+            break;
+        }
+        //switch(nodeType){
 
 }
 void ClusterManager::sendBroadcast(ClusterPkt* pkt)

@@ -77,6 +77,7 @@ public:
 	    , nH("Nodes Head")
 	    , nU("Nodes Undef")
 	    , nC("Nodes Child")
+	    , clusterLifeTime("Lifetime")
 		, recordVectors(false)
 		, bitrate(0)
 	{}

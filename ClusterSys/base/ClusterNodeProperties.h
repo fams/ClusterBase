@@ -30,11 +30,12 @@ enum NodePhase {
 class ClusterStatisticsPacket : public cObject{
     NodeRole currentRole;
     NodeRole lastRole;
+    simtime_t lifetime;
 public:
     /*! Classe para envio de estatisticas para o WorldStatistics*/
 
-    ClusterStatisticsPacket(NodeRole cr = UNDEFINED_NODE, NodeRole lr = UNDEFINED_NODE) :
-        cObject(), currentRole(cr), lastRole(lr){
+    ClusterStatisticsPacket(NodeRole cr = UNDEFINED_NODE, NodeRole lr = UNDEFINED_NODE, simtime_t lt = 0) :
+        cObject(), currentRole(cr), lastRole(lr), lifetime(lt){
 
     };
     /*! Return current Role */
@@ -44,6 +45,11 @@ public:
     /*! Return old Role */
     NodeRole getlastRole() const{
         return lastRole;
+    }
+
+    simtime_t getLifeTime() const {
+        return lifetime;
+
     }
 
 };

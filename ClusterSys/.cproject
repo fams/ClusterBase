@@ -42,16 +42,6 @@
 							</tool>
 						</toolChain>
 					</folderInfo>
-					<folderInfo id="org.omnetpp.cdt.gnu.config.debug.531222276.1419232234" name="/" resourcePath="ClusterMCFA">
-						<toolChain id="org.omnetpp.cdt.gnu.toolchain.debug.702992391" name="GCC for OMNeT++" superClass="org.omnetpp.cdt.gnu.toolchain.debug" unusedChildren="">
-							<tool id="cdt.managedbuild.tool.gnu.archiver.base.829226296" name="GCC Archiver" superClass="cdt.managedbuild.tool.gnu.archiver.base.842136532"/>
-							<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.base.332904211" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.base.1868111625"/>
-							<tool id="cdt.managedbuild.tool.gnu.c.compiler.base.1471158387" name="GCC C Compiler" superClass="cdt.managedbuild.tool.gnu.c.compiler.base.81463094"/>
-							<tool id="cdt.managedbuild.tool.gnu.c.linker.base.951877026" name="GCC C Linker" superClass="cdt.managedbuild.tool.gnu.c.linker.base.2000412921"/>
-							<tool id="cdt.managedbuild.tool.gnu.cpp.linker.base.693649654" name="GCC C++ Linker" superClass="cdt.managedbuild.tool.gnu.cpp.linker.base.494232638"/>
-							<tool id="cdt.managedbuild.tool.gnu.assembler.base.1823297268" name="GCC Assembler" superClass="cdt.managedbuild.tool.gnu.assembler.base.1660877383"/>
-						</toolChain>
-					</folderInfo>
 					<sourceEntries>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 					</sourceEntries>
