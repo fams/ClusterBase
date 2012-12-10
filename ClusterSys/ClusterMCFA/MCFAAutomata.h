@@ -90,6 +90,9 @@ public:
 
     void setMyID(double MyID);
 
+    //permite atualizar ultima aparição do node
+    void updateSeen(int);
+
 
 };
 

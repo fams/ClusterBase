@@ -82,7 +82,9 @@ void MCFAAutomata::newEpoch(int node, MobInfo* myMob, MobInfo *mi)
 	}
 	epoch++;
 }
-
+void MCFAAutomata::updateSeen(int node){
+    ActionSetProperties[node].lastseen = simTime();
+}
 double MCFAAutomata::getT(){
 
 }

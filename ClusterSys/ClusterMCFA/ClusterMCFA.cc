@@ -139,6 +139,9 @@ void ClusterMCFA::handleReset(cMessage *msg) {
     sprintf(tt, "MyAddr is %i", myAddress);
     setTTString(tt);
 
+    cancelAndDelete(delayTimer);
+    delayTimer = new cMessage("PROC_MCFA", PROC_MCFA);
+    scheduleAt(simTime(),delayTimer);
 
 }
 
@@ -179,9 +182,14 @@ void ClusterMCFA::nodeGarbageCollector(){
         break;
     case CHILD_NODE:{
         if(std::find(removidos.begin(), removidos.end(), getHeadAddress())!=removidos.end()){
+            /*
             setCurrentRole(UNDEFINED_NODE);
             currStage = 0;
             MCF();
+            */
+            cancelAndDelete(delayTimer);
+            delayTimer = new cMessage("reseting", RESET);
+            handleReset(delayTimer);
         }
     }
         break;
@@ -196,6 +204,9 @@ void ClusterMCFA::handleSelfMsg(cMessage *msg) {
     switch (msg->getKind()) {
     case POLL: {
         handlePolling(msg);
+        debugEV << "Reagendando polling para " << simTime().dbl() + pollingTime << endl;
+        cancelEvent(pollingTimer);
+        scheduleAt( simTime() + pollingTime , pollingTimer);
     }
     break;
     case RESET: {
@@ -217,6 +228,7 @@ void ClusterMCFA::handleSelfMsg(cMessage *msg) {
         double lastSpeed = gps.getSpeed();
         double lastDirection = gps.getDirection();
         gps.updatePos(&HostCoor);
+        debugEV << "Meu estado atual" << clusterNodeState << endl;
         debugEV << "LastCourse: " << lastDirection << " currentCourse " << gps.getDirection() << "\n";
         debugEV << "LastSpeed: " << lastSpeed << " currentSpeed: " << gps.getSpeed() << "\n";
         if (((lastSpeed != gps.getSpeed())
@@ -258,7 +270,7 @@ void ClusterMCFA::handleSelfMsg(cMessage *msg) {
         debugEV << "Agendando Formacao em :" << asfreqTime << endl;
         cancelAndDelete(delayTimer);
         delayTimer = new cMessage("delay-timer", GET_RERM);
-        clusterNodeState = INITIALIZING;
+        clusterNodeState = ACTSETFORM;
         scheduleAt(simTime() + asfreqTime, delayTimer);
     }
         break;
@@ -391,12 +403,18 @@ void ClusterMCFA::handleMCFAControl(ClusterMCFAPkt *m) {
             debugEV << "Retorno de RERM" <<endl;
             cancelAndDelete(delayTimer);
             cancelEvent(reinitTimer);
+            //SE chegou mensagem, o sujeito está vivo
+            Automata->updateSeen(m->getSrcAddr());
+            //Pego o ERMt da mensagem
             w = m->getERM();
             //Chamo de volta o MCF para atualizar
             MCF();
             delayTimer = new cMessage("delay-timer", PROC_MCFA);
-            debugEV << "Reagendando MFC" <<endl;
-            scheduleAt(simTime(), delayTimer);
+            //Se atingiu um HEAD, para de procurar por um
+            if(currStage < 2){
+                debugEV << "CurrStage: " << currStage <<"Reagendando MFC" <<endl;
+                scheduleAt(simTime(), delayTimer);
+            }
         } else if(m->getERM() == 0){
             debugEV << "Respondendo RERM: De:" << myAddress << " --> "
                     << m->getSrcAddr()  <<endl;
@@ -420,6 +438,7 @@ void ClusterMCFA::handleMCFAControl(ClusterMCFAPkt *m) {
         childs.push_back(m->getSrcAddr());
         setHeadAddress(myAddress);
         setCurrentRole(HEAD_NODE);
+        clusterNodeState = RUNNING ;
         cancelEvent(delayTimer);
     }
         break;
@@ -429,6 +448,9 @@ void ClusterMCFA::handleMCFAControl(ClusterMCFAPkt *m) {
         mi->direction = m->getDirection();
         mi->speed = m->getSpeed();
         debugEV << "Atualizando Action set do host " << m->getSrcAddr() << endl;
+        if(getCurrentRole() == HEAD_NODE){
+            updateSeen(m->getSrcAddr() );
+        }
         Automata->newEpoch(m->getSrcAddr(), mi, getMobInfo());
     }
         break;
@@ -491,7 +513,7 @@ int ClusterMCFA::MCF() {
                 << Automata->getProbability(ch) << " P: " << P << endl;
         currStage = 0;
     } else {
-        debugEV << "Probability" << Automata->getProbability(ch) << " Threshold "
+        debugEV << "Probability: " << Automata->getProbability(ch) << " Threshold:"
                 << P << endl;
         if (ch == myAddress) {
             setCurrentRole(HEAD_NODE);
@@ -502,7 +524,9 @@ int ClusterMCFA::MCF() {
             setHeadAddress(ch);
 
         }
+        debugEV << "Encontrei o Meu HEAD:" << ch;
         currStage = 2;
+        debugEV << " currStage agora e" << currStage  <<endl;
     }
     ch = 0;
     return 1;
