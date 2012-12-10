@@ -9,6 +9,7 @@
 #define MCFAAUTOMATA_H_
 #include <vector>
 #include <map>
+#include <algorithm>
 #include <omnetpp.h>
 
 enum ClusterNodeStates{
