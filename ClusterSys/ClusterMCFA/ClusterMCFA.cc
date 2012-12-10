@@ -40,9 +40,17 @@ void ClusterMCFA::initialize(int stage) {
 
         resetTimer = new cMessage("reset-timer", RESET);
 
-        pollingTimer = new cMessage("polling-timer", POLL);
+        reinitTimer = new cMessage("reinit-MFC", PROC_MCFA2);
 
         //Parameters
+
+        //pollingTimer = new cMessage("polling-timer", CLUSTER_BASE_POLL);
+        pollingTimer = new cMessage("polling-timer", POLL);
+        pollingTime = par("pollingTime");
+
+        //Node Timeout
+        int timeout = par("timeout");
+        setNodeTimeout(timeout);
         //Tempo para esperar por formar o ActionSet
         asfreqTime  = par("asfreqTime");
 
@@ -50,8 +58,6 @@ void ClusterMCFA::initialize(int stage) {
         resetTime   = par("resetTime");
 
         rermTimeout = par("rermTimeout");
-
-        pollingTime = par("pollingTime");
 
         gpsInterval = par("gpsInterval");
 
@@ -117,6 +123,7 @@ ClusterMCFA::~ClusterMCFA() {
     cancelAndDelete(resetTimer);
 }
 
+
 void ClusterMCFA::handleReset(cMessage *msg) {
     //Reseting all
     debugEV << "Reseting  " << endl;
@@ -137,6 +144,52 @@ void ClusterMCFA::handleReset(cMessage *msg) {
 
 void ClusterMCFA::finish() {
 }
+void ClusterMCFA::HeadPolling(cMessage *msg){
+    //sendMobInfo();
+    nodeGarbageCollector();
+}
+//Tratamento de polling Child, vou ver se tenho Pai, quem s‹o os meus vizinhos
+void ClusterMCFA::ChildPolling(cMessage *msg){
+    debugEV << "Handle child Polling" << endl;
+    //sendMobInfo();
+    nodeGarbageCollector();
+
+}
+
+
+void ClusterMCFA::nodeGarbageCollector(){
+    int i ;
+    std::vector<int> removidos = Automata->garbageCollector(simTime() - getNodeTimeout());
+    for(i=0;i<removidos.size();i++){
+        debugEV << "Removi da lista de proximos " << removidos[i] <<endl;
+    }
+    switch(getCurrentRole()){
+    case HEAD_NODE:{
+        int ActiveChilds, TotalChilds;
+        std::map<LAddress::L3Type, NodeEntry> ChildList = getChildList();
+        debugEV << "Temos: " << ChildList.size() << endl;
+        ActiveChilds = TotalChilds = ChildList.size();
+        for(i=0;i<removidos.size();i++){
+            debugEV << "Removi da lista de Filhotes " << removidos[i] <<endl;
+            if(ChildList.find(removidos[i]) != ChildList.end() ){
+                removeChild(removidos[i]);
+            }
+        }
+    }
+        break;
+    case CHILD_NODE:{
+        if(std::find(removidos.begin(), removidos.end(), getHeadAddress())!=removidos.end()){
+            setCurrentRole(UNDEFINED_NODE);
+            currStage = 0;
+            MCF();
+        }
+    }
+        break;
+
+    }
+
+
+}
 
 //Own App Self Message
 void ClusterMCFA::handleSelfMsg(cMessage *msg) {
@@ -144,11 +197,11 @@ void ClusterMCFA::handleSelfMsg(cMessage *msg) {
     case POLL: {
         handlePolling(msg);
     }
-        break;
-
+    break;
     case RESET: {
         handleReset(msg);
     }
+    break;
     case UPDATE_POSITION: {
 
         BaseMobility* mob = FindModule<BaseMobility*>::findSubModule(
@@ -178,9 +231,14 @@ void ClusterMCFA::handleSelfMsg(cMessage *msg) {
             novoGPS = 0;
             debugEV << "Enviando Mobile Info" << endl;
             sendMobInfo();
+            //Envio Update para todo mundo de tempos em tempos, a menos que envie aqui
+            //cancelEvent(pollingTimer);
+            //scheduleAt(simTime()+pollingTime,pollingTimer);
         }
         cancelEvent(sendMobTimer);
         scheduleAt(simTime() + gpsInterval, sendMobTimer);
+
+
         //cancelAndDelete(sendMobTimer);
     }
         break;
@@ -204,19 +262,38 @@ void ClusterMCFA::handleSelfMsg(cMessage *msg) {
     }
         break;
     case INIT_MCFA: {
+        debugEV << "INIT_MCFA" << endl;
         //Append me as an action
         double ret = Automata->addAction(myAddress, getMobInfo(), getMobInfo());
-        debugEV << "RM:" << ret << endl;
+        ERMi[myAddress] = Automata->getERMt();
+        debugEV << "myAddress " << myAddress << " ERMt " << ERMi[myAddress] << endl;
+        debugEV << "RM:" << ret << " ERMt:" << Automata->getERMt() << endl;
         cancelAndDelete(delayTimer);
         //Call Cluster Formation at stage and wait for next stage
         currStage = 0;
         clusterNodeState = HEADSELECT;
         double myp = Automata->initProb();
         debugEV << "P inicial de: " << myp <<  " Nodes " << Automata->getDegree() << endl;
+        /*Calculo de T inicial
+         *
+         */
+        double ERMk = 0;
+        //debugEV << "ERMi[ch]" << ERMi[ch] << endl;
+        for (std::map<int, double>::iterator it = ERMi.begin(); it != ERMi.end(); it++) {
+            debugEV << (*it).first << " it = " << (*it).second << endl;
+            ERMk += (*it).second;
+        }
+        //ERMk += Automata->getERMt();
+        //T = ERMk / (Automata->getDegree() + 1);
+        T = ERMk / ERMi.size();
+/*
+ * Agendamento de PROC_MCFA
+ */
+        delayTimer = new cMessage("PROC_MCFA", PROC_MCFA);
+        scheduleAt(simTime(), delayTimer);
+        debugEV << "Agendando polling para " << simTime().dbl() + pollingTime << endl;
+        scheduleAt(simTime() + pollingTime, pollingTimer);
 
-        MCF();
-        delayTimer = new cMessage("PROC_MCFA", PROC_MCFA2);
-        scheduleAt(simTime() + rermTimeout, delayTimer);
     }
     break;
     case GET_RERM:{
@@ -235,9 +312,10 @@ void ClusterMCFA::handleSelfMsg(cMessage *msg) {
     case PROC_MCFA:{
         debugEV << "PROC_MCFA" << endl;
         MCF();
-        if (currStage < 2)
-            scheduleAt(simTime() + rermTimeout, delayTimer);
+        if(currStage == 0){
+            scheduleAt(simTime()+ 0.1, delayTimer);
         }
+    }
     break;
     case PROC_MCFA2:{
         debugEV << "------RESET RERM ---" <<endl;
@@ -308,13 +386,16 @@ void ClusterMCFA::handleMCFAControl(ClusterMCFAPkt *m) {
     case MCFA_RERM: {
         debugEV << "Recebi um RERM de " << m->getSrcAddr() << " Meu ch eh "
                 << ch << " w da mensagem: " << m->getERM() << endl;
-        if (m->getSrcAddr() == ch && currStage == 1) { //se veio do meu ch eu volto para a construcao do cluster
+        if (m->getSrcAddr() == ch && currStage == 1 && m->getERM() != 0 ) { //se veio do meu ch eu volto para a construcao do cluster
             debugEV << "Retorno de RERM" <<endl;
             cancelAndDelete(delayTimer);
+            cancelEvent(reinitTimer);
             w = m->getERM();
+            //Chamo de volta o MCF para atualizar
             MCF();
-            delayTimer = new cMessage("delay-timer", PROC_MCFA2);
-            scheduleAt(simTime() + 2, delayTimer);
+            delayTimer = new cMessage("delay-timer", PROC_MCFA);
+            debugEV << "Reagendando MFC" <<endl;
+            scheduleAt(simTime(), delayTimer);
         } else if(m->getERM() == 0){
             debugEV << "Respondendo RERM: De:" << myAddress << " --> "
                     << m->getSrcAddr()  <<endl;
@@ -372,6 +453,7 @@ int ClusterMCFA::MCF() {
                     MCFA_CTRL);
             pkt->setMsgtype(MCFA_RERM);
             sendDirectMessage(pkt, ch);
+            scheduleAt(simTime() + 4 , reinitTimer);
             currStage = 1;
             return 1;
         }
@@ -391,9 +473,8 @@ int ClusterMCFA::MCF() {
     ERMi[ch] = w;
     double ERMk = 0;
     debugEV << "ERMi[ch]" << ERMi[ch] << endl;
-    for (std::map<int, double>::iterator it = ERMi.begin(); it != ERMi.end();
-            it++) {
-        debugEV << "it = " << (*it).second << endl;
+    for (std::map<int, double>::iterator it = ERMi.begin(); it != ERMi.end(); it++) {
+        debugEV << (*it).first << " it = " << (*it).second << endl;
         ERMk += (*it).second;
     }
     //ERMk += Automata->getERMt();
@@ -409,7 +490,7 @@ int ClusterMCFA::MCF() {
                 << Automata->getProbability(ch) << " P: " << P << endl;
         currStage = 0;
     } else {
-        debugEV << "Probability" << Automata->getProbability(ch) << "Threshold"
+        debugEV << "Probability" << Automata->getProbability(ch) << " Threshold "
                 << P << endl;
         if (ch == myAddress) {
             setCurrentRole(HEAD_NODE);
@@ -422,6 +503,7 @@ int ClusterMCFA::MCF() {
         }
         currStage = 2;
     }
+    ch = 0;
     return 1;
 }
 

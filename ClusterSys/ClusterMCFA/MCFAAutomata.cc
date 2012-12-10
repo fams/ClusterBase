@@ -42,6 +42,7 @@ double MCFAAutomata::addAction(int node, MobInfo *mi, MobInfo* myMob){
 	//ActionSetProperties[node].stage = 1;
 	double ERMt = RM(myMob, mi);
 	ActionSetProperties[node].ERMt = ERMt;
+	ActionSetProperties[node].lastseen = simTime();
 	return ERMt;
 }
 
@@ -73,6 +74,7 @@ void MCFAAutomata::newEpoch(int node, MobInfo* myMob, MobInfo *mi)
 	int i=0;
 	double RMt;
 	ActionSetProperties[node].Mobility = mi;
+	ActionSetProperties[node].lastseen = simTime();
 	for(i=0;i<ActionSet.size();i++){
 		RMt = RM(myMob, ActionSetProperties[node].Mobility );
 
@@ -122,8 +124,14 @@ double MCFAAutomata::getERMt(){
 			i++;
 		}
 	}
-	return sumERM/i;
+	if(i==0){
+	    return 0;
+	}else{
+	    return sumERM/i;
+	}
 }
+
+
 
 double MCFAAutomata::RM(MobInfo *a, MobInfo *b){
 	//RM Equation
@@ -144,6 +152,36 @@ int MCFAAutomata::getNeigh(int node){
 int MCFAAutomata::getDegree(){
 	return (ActionSet.size() - 1) ;
 
+}
+void MCFAAutomata::removeAction(int node){
+
+    //Remove o elemento da lista de ActionSet
+    ActionSet.erase(std::remove(ActionSet.begin(), ActionSet.end(), node), ActionSet.end());
+    //Guarda a sua chance de escolha
+    double nodeP = ActionSetProperties[node].Probability;
+    //apaga as propriedades
+    delete ActionSetProperties[node].Mobility;
+    std::map<int, ActionSetData>::iterator it;
+    it = ActionSetProperties.find(node);
+    ActionSetProperties.erase(it);
+
+    //distribui a probabilidade de forma proporcional
+    int i=0;
+    for(i=0;i<ActionSet.size();i++){
+        ActionSetProperties[ActionSet[i]].Probability += ActionSetProperties[ActionSet[i]].Probability * (nodeP/(1-nodeP) );
+    }
+}
+
+std::vector<int> MCFAAutomata::garbageCollector(simtime_t threshold){
+    std::vector<int> removidos;
+    int i;
+    for(i=0;i<ActionSet.size();i++){
+        if((ActionSetProperties[ActionSet[i]].lastseen < threshold) && (ActionSet[i] != MyID)){
+            removidos.push_back(ActionSet[i]);
+            removeAction(ActionSet[i]);
+        }
+    }
+    return removidos;
 }
 
 void MCFAAutomata::setMyID(double MyID){

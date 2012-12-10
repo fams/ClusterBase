@@ -34,7 +34,10 @@ void ClusterManager::initialize(int stage)
     if(stage == 0){
         NetNetlIn = findGate("NetNetlIn");
         NetNetlOut = findGate("NetNetlOut");
-
+        //Polling
+        nodeTimeout = par("timeout");
+        pollingTimer = new cMessage("polling-timer", CLUSTER_BASE_POLL);
+        pollingTime = par("pollingTime");
 
     }else if (stage == 1) {
 
@@ -286,50 +289,56 @@ void ClusterManager::setTTString(char *tt)
     cDisplayString& dispStr = getNodeDisplayString();
     dispStr.setTagArg("tt", 0, tt);
 }
+void ClusterManager::ChildPolling(cMessage *msg){
+    debugEV << "Handle child Polling" << endl;
+    if ((headLastSeen + nodeTimeout )  < simTime().dbl()){
+        debugEV << "Estourou o timer, vou resetar" << endl;
+        cancelEvent(resetTimer);
+        scheduleAt( simTime() + 1, resetTimer);
+    }else{
+        debugEV << "Vi meu Head em: " << headLastSeen << " timeout em: " << (headLastSeen + nodeTimeout) << endl;
+        cancelEvent(resetTimer);
+        scheduleAt( headLastSeen + nodeTimeout  , resetTimer);
+    }
+}
+void ClusterManager::nodeGarbageCollector(){
+    int ActiveChilds, TotalChilds;
+    debugEV << "Temos: " << ChildList.size() << endl;
+    ActiveChilds = TotalChilds = ChildList.size();
 
+    for( std::map<LAddress::L3Type, NodeEntry> ::iterator it = ChildList.begin(); it != ChildList.end(); it++){
+        if (((it->second).lastSeen + nodeTimeout) < simTime().dbl() ){
+            ActiveChilds--;
+            removeChild(it->first);
+        }
+    }
+}
+void ClusterManager::HeadPolling(cMessage *msg){
+    debugEV << "Handle head Polling" << endl;
+    nodeGarbageCollector();
+    int ActiveChilds, TotalChilds;
+    debugEV << "Temos: " << ChildList.size() << endl;
+    ActiveChilds = TotalChilds = ChildList.size();
+
+    ClusterPkt *pkt = new ClusterPkt("DIRECT: HEAD POLLING", CLUSTER_BASE_PING);
+    setPktValues(pkt,CLUSTER_PING, getHeadAddress(), myAddress);
+    sendBroadcast(pkt);
+    debugEV << "TotalChilds: "<< TotalChilds << "\t ActiveChilds: " << ActiveChilds << endl;
+    if(isHeadValid(TotalChilds,ActiveChilds)){
+        cancelEvent(resetTimer);
+        int rndTime = (dblrand() * myAddress);
+        scheduleAt( simTime() + nodeTimeout + rndTime , resetTimer);
+    }
+}
 void ClusterManager::handlePolling(cMessage *msg){
     debugEV << "Received polling event!!!!" << endl;
         switch(getCurrentRole()){
         case CHILD_NODE:{
-            debugEV << "Handle child Polling" << endl;
-            if ((headLastSeen + nodeTimeout )  < simTime().dbl()){
-                debugEV << "Estourou o timer, vou resetar" << endl;
-                cancelEvent(resetTimer);
-                scheduleAt( simTime() + 1, resetTimer);
-            }else{
-                debugEV << "Vi meu Head em: " << headLastSeen << " timeout em: " << (headLastSeen + nodeTimeout) << endl;
-                cancelEvent(resetTimer);
-                scheduleAt( headLastSeen + nodeTimeout  , resetTimer);
-                cancelEvent(pollingTimer);
-                scheduleAt( simTime() + pollingTime , pollingTimer);
-            }
+            ChildPolling(msg);
         }
         break;
         case HEAD_NODE:{
-            debugEV << "Handle head Polling" << endl;
-            int ActiveChilds, TotalChilds;
-            debugEV << "Temos: " << ChildList.size() << endl;
-            ActiveChilds = TotalChilds = ChildList.size();
-
-            for( std::map<LAddress::L3Type, NodeEntry> ::iterator it = ChildList.begin(); it != ChildList.end(); it++){
-                if (((it->second).lastSeen + nodeTimeout) < simTime().dbl() ){
-                    ActiveChilds--;
-                    removeChild(it->first);
-                }
-            }
-            debugEV << "Enviando um PING" <<endl;
-
-            ClusterPkt *pkt = new ClusterPkt("DIRECT: HEAD POLLING", CLUSTER_BASE_PING);
-            setPktValues(pkt,CLUSTER_PING, getHeadAddress(), myAddress);
-            sendBroadcast(pkt);
-            debugEV << "TotalChilds: "<< TotalChilds << "\t ActiveChilds: " << ActiveChilds << endl;
-            if(isHeadValid(TotalChilds,ActiveChilds)){
-                cancelEvent(resetTimer);
-                cancelEvent(pollingTimer);
-                int rndTime = (dblrand() * myAddress);
-                scheduleAt( simTime() + nodeTimeout + rndTime , resetTimer);
-                scheduleAt( simTime() + pollingTime , pollingTimer);
-            }
+            HeadPolling(msg);
         }
         break;
         default:
@@ -337,7 +346,8 @@ void ClusterManager::handlePolling(cMessage *msg){
             break;
         }
         //switch(nodeType){
-
+        cancelEvent(pollingTimer);
+        scheduleAt( simTime() + pollingTime , pollingTimer);
 }
 void ClusterManager::sendBroadcast(ClusterPkt* pkt)
 {

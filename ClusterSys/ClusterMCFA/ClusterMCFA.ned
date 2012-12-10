@@ -51,6 +51,8 @@ simple ClusterMCFA extends ClusterManager
         double 	rewardP = default (0.1);
         double 	penaltyP = default(0.1);
         double	gpsInterval = default(1.0);
+ //       int		timeout = default(20);
+        
         @class(ClusterMCFA);
         
         

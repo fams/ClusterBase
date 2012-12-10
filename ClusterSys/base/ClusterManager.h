@@ -44,6 +44,7 @@ public:
         CLUSTER_DATA_PACKET = 13001,
         CLUSTER_CONTROL_BLOCK,
         CLUSTER_BASE_PING,
+        CLUSTER_BASE_POLL,
         LAST_BASE_CLUSTER_MESSAGE_KIND
     };
 protected:
@@ -148,6 +149,8 @@ protected:
     virtual void handleSelfMsg(cMessage *msg);
     virtual void handleNetlayerMsg(cMessage *msg);
     virtual void handlePolling(cMessage*);
+    virtual void HeadPolling(cMessage *msg);
+    virtual void ChildPolling(cMessage *msg);
     virtual int isHeadValid(int,int){return true;};
     /** @brief preenche o pacote */
     virtual void setPktValues(ClusterPkt *, int , int  , int  );
@@ -162,6 +165,7 @@ protected:
     void setCurrentPhase(NodePhase newPhase);
     cDisplayString& getNodeDisplayString();
     void setTTString(char*);
+    virtual void nodeGarbageCollector();
 
 };
 

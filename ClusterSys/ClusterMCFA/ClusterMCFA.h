@@ -109,6 +109,8 @@ protected:
 
 	cMessage *sendMobTimer;
 
+	cMessage *reinitTimer;
+
 	/* @brief tempo de vida do cluster (tempo de vida do node) */
     simtime_t clusterLifeTime;
 
@@ -175,6 +177,9 @@ protected:
 	/** @brief Handle event RESET */
 	virtual void handleReset(cMessage *msg);
 
+	virtual void HeadPolling(cMessage *msg);
+	virtual void ChildPolling(cMessage *msg);
+
 	int MCF();
 
 	void handleMCFAControl(ClusterMCFAPkt *m);
@@ -187,6 +192,8 @@ protected:
 
 	//*Broadcast MobInfo */
 	void sendMobInfo();
+
+	void nodeGarbageCollector();
 
 };
 

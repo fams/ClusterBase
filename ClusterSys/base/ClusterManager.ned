@@ -22,7 +22,7 @@ simple ClusterManager like IClusterManager
 {
     parameters:
         @display("i=block/circle");
-        int timeout ;
+        int timeout = default(20);
     gates:
         input NetNetlIn;
         output NetNetlOut;

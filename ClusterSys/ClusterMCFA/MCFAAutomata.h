@@ -26,7 +26,7 @@ enum ClusterNodeStates{
 
 
 typedef struct MobInfo {double speed; double direction;} MobInfo;
-typedef struct ActionSetData {double Probability; double ERMt; MobInfo *Mobility;};
+typedef struct ActionSetData {double Probability; double ERMt; MobInfo *Mobility; simtime_t lastseen;};
 
 class MCFAAutomata {
 	//Action Set
@@ -45,6 +45,8 @@ public:
 
 	//* @brief Adiciona entrada ao AC
 	double addAction(int node, MobInfo *mi, MobInfo* myMob);
+
+	void removeAction(int node);
 
 	//* @brief init Probability */
 	double initProb();
@@ -83,6 +85,7 @@ public:
 	/* @brief retorna o grau do node */
 	int getDegree();
 
+	std::vector<int> garbageCollector(simtime_t);
 
     void setMyID(double MyID);
 
