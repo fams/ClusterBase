@@ -217,7 +217,8 @@ void ClusterMCFA::handleSelfMsg(cMessage *msg) {
         double lastSpeed = gps.getSpeed();
         double lastDirection = gps.getDirection();
         gps.updatePos(&HostCoor);
-        debugEV << "LastSpeed: " << lastSpeed << " actualSpeed: " << gps.getSpeed() << "\n";
+        debugEV << "LastCourse: " << lastDirection << " currentCourse " << gps.getDirection() << "\n";
+        debugEV << "LastSpeed: " << lastSpeed << " currentSpeed: " << gps.getSpeed() << "\n";
         if (((lastSpeed != gps.getSpeed())
                 || (lastDirection != gps.getDirection()))
                 && clusterNodeState > ACTSETFORM) {
