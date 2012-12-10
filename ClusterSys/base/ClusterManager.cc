@@ -301,6 +301,9 @@ void ClusterManager::ChildPolling(cMessage *msg){
         scheduleAt( headLastSeen + nodeTimeout  , resetTimer);
     }
 }
+void ClusterManager::UndefinedPolling(cMessage *msg){
+}
+
 void ClusterManager::nodeGarbageCollector(){
     int ActiveChilds, TotalChilds;
     debugEV << "Temos: " << ChildList.size() << endl;
@@ -341,13 +344,15 @@ void ClusterManager::handlePolling(cMessage *msg){
             HeadPolling(msg);
         }
         break;
+        case UNDEFINED_NODE:
+            UndefinedPolling(msg);
+            break;
         default:
-            debugEV << "Type Not Handled" << endl;
+            debugEV << "Type Not Handled" << getCurrentRole() << endl;
             break;
         }
         //switch(nodeType){
-        cancelEvent(pollingTimer);
-        scheduleAt( simTime() + pollingTime , pollingTimer);
+
 }
 void ClusterManager::sendBroadcast(ClusterPkt* pkt)
 {

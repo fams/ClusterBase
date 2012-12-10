@@ -151,7 +151,10 @@ protected:
     virtual void handlePolling(cMessage*);
     virtual void HeadPolling(cMessage *msg);
     virtual void ChildPolling(cMessage *msg);
+    virtual void UndefinedPolling(cMessage *msg);
     virtual int isHeadValid(int,int){return true;};
+
+
     /** @brief preenche o pacote */
     virtual void setPktValues(ClusterPkt *, int , int  , int  );
     /** @brief Send a broadcast message to lower layer. */
