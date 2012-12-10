@@ -3,7 +3,6 @@
 	<name>ClusterSys</name>
 	<comment></comment>
 	<projects>
-		<project>Epidemic</project>
 		<project>MiXiM</project>
 	</projects>
 	<buildSpec>

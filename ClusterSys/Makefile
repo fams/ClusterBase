@@ -2,7 +2,7 @@
 # OMNeT++/OMNEST Makefile for ClusterSys
 #
 # This file was generated with the command:
-#  opp_makemake -f --deep -O out -I/Users/fernando/Documents/omnetpp-4.2.2/MiXiM/src/base/phyLayer -I/Users/fernando/Documents/omnetpp-4.2.2/MiXiM/src/base/modules -I/Users/fernando/Documents/omnetpp-4.2.2/MiXiM/src/base/connectionManager -I/Users/fernando/Documents/omnetpp-4.2.2/MiXiM/src/base/messages -I/Users/fernando/Documents/omnetpp-4.2.2/MiXiM/src/base/utils -I/Users/fernando/Documents/omnetpp-4.2.2/MiXiM/examples/CSMAMac -I/Users/fernando/Documents/omnetpp-4.2.2/MiXiM/src/modules/utility -I/Users/fernando/Documents/omnetpp-4.2.2/MiXiM/src/modules/phy -I/Users/fernando/Documents/omnetpp-4.2.2/MiXiM/src/modules/analogueModel -I/Users/fernando/Documents/omnetpp-4.2.2/MiXiM/src/modules/messages -L/Users/fernando/Documents/omnetpp-4.2.2/MiXiM/out/$(CONFIGNAME)/src/base -L/Users/fernando/Documents/omnetpp-4.2.2/MiXiM/out/$(CONFIGNAME)/src/modules -lmiximbase -lmiximmodules -KEPIDEMIC_PROJ=/Users/fernando/Documents/omnetpp-4.2.2/Epidemic -KMIXIM_PROJ=/Users/fernando/Documents/omnetpp-4.2.2/MiXiM
+#  opp_makemake -f --deep -O out -I/Users/fernando/Documents/omnetpp-4.2.2/MiXiM/src/base/phyLayer -I/Users/fernando/Documents/omnetpp-4.2.2/MiXiM/src/base/modules -I/Users/fernando/Documents/omnetpp-4.2.2/MiXiM/src/base/connectionManager -I/Users/fernando/Documents/omnetpp-4.2.2/MiXiM/src/base/messages -I/Users/fernando/Documents/omnetpp-4.2.2/MiXiM/src/base/utils -I/Users/fernando/Documents/omnetpp-4.2.2/MiXiM/examples/CSMAMac -I/Users/fernando/Documents/omnetpp-4.2.2/MiXiM/src/modules/utility -I/Users/fernando/Documents/omnetpp-4.2.2/MiXiM/src/modules/phy -I/Users/fernando/Documents/omnetpp-4.2.2/MiXiM/src/modules/analogueModel -I/Users/fernando/Documents/omnetpp-4.2.2/MiXiM/src/modules/messages -L/Users/fernando/Documents/omnetpp-4.2.2/MiXiM/out/$(CONFIGNAME)/src/base -L/Users/fernando/Documents/omnetpp-4.2.2/MiXiM/out/$(CONFIGNAME)/src/modules -lmiximbase -lmiximmodules -KMIXIM_PROJ=/Users/fernando/Documents/omnetpp-4.2.2/MiXiM
 #
 
 # Name of target to be created (-o option)
@@ -77,7 +77,6 @@ MSGFILES = \
     base/messages/NetwPkt.msg
 
 # Other makefile variables (-K)
-EPIDEMIC_PROJ=/Users/fernando/Documents/omnetpp-4.2.2/Epidemic
 MIXIM_PROJ=/Users/fernando/Documents/omnetpp-4.2.2/MiXiM
 
 #------------------------------------------------------------------------------
