@@ -137,6 +137,9 @@ double MCFAAutomata::getERMt(){
 
 double MCFAAutomata::RM(MobInfo *a, MobInfo *b){
 	//RM Equation
+    if( (a->speed == b->speed ) and (a->direction == b->direction)){
+        return 0;
+    }
 	return sqrt((a->speed * a->speed)+(b->speed * b->speed) - (2 * a->speed * b->speed * cos(a->direction - b->direction)));
 }
 

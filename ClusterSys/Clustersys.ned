@@ -26,7 +26,7 @@ network Cluster extends BaseNetwork
     parameters:
         int numNodes; // total number of hosts in the network
 
-        @display("bgi=background/streetmap");
+        @display("bgi=background/streetmap,t");
     submodules:
         node[numNodes]: Host80211;
     connections allowunconnected:

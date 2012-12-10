@@ -326,7 +326,7 @@ void ClusterMCFA::handleSelfMsg(cMessage *msg) {
         debugEV << "PROC_MCFA" << endl;
         MCF();
         if(currStage == 0){
-            scheduleAt(simTime()+ 0.1, delayTimer);
+            scheduleAt(simTime()+ 0.2, delayTimer);
         }
     }
     break;

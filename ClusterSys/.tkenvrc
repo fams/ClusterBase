@@ -1,5 +1,3 @@
 # Partial Tkenv config file -- see $HOME/.tkenvrc as well
-inspector "Cluster.node[7].netwl.ClusterManager.polling-timer" "cMessage" "1" "471x313+188+302:normal"
-inspector "Cluster.node[0].netwl.ClusterManager.polling-timer" "cMessage" "1" "471x313+627+381:normal"
 inspector "Cluster.node[2].netwl.ClusterManager" "ClusterManager" "1" "619x312+26+50:normal"
 
