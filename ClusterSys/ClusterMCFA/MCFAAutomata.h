@@ -21,8 +21,9 @@ enum ClusterNodeStates{
     CHILD_JOIN      = 5,
     CHILD_MESSAGE   = 6,
     ACTSETFORM      = 7,
-    HEADSELECT      = 8,
-    RUNNING         = 9,
+    JOIN            = 8,
+    HEADSELECT      = 9,
+    RUNNING         = 10,
 };
 
 

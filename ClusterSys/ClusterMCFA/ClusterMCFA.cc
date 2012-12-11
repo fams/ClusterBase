@@ -261,6 +261,43 @@ void ClusterMCFA::handleSelfMsg(cMessage *msg) {
         //cancelAndDelete(sendMobTimer);
     }
         break;
+    case SEND_JREQ:{
+        headCandidate = -1;
+        candidateERM = -1;
+        debugEV << "Enviando JREQ:" << myAddress << endl;
+        //Criando Pacote ASFREQ
+        ClusterMCFAPkt *pkt = new ClusterMCFAPkt("BROADCAST: JREQ",
+                MCFA_CTRL);
+        //ASFREQ Message
+        pkt->setMsgtype(MCFA_JREQ);
+        pkt->setOriginId(myAddress);
+        sendBroadcast(pkt);
+        //Limpando AS
+        Automata->clearAS();
+        //Agenda Mudanca de estado
+        debugEV << "Agendando Definicao Join em :" << asfreqTime << endl;
+        cancelAndDelete(delayTimer);
+        delayTimer = new cMessage("delay-timer", RESOLV_JOIN);
+        clusterNodeState = JOIN;
+        scheduleAt(simTime() + asfreqTime, delayTimer);
+    }
+    break;
+    case RESOLV_JOIN:{
+        if(headCandidate < 0){
+            debugEV << "Agendando Formacao  " << endl;
+            cancelAndDelete(delayTimer);
+            delayTimer = new cMessage("delay-timer", GET_RERM);
+            clusterNodeState = ACTSETFORM;
+            scheduleAt(simTime(), delayTimer);
+        }else{
+            debugEV << "Encontrei um Head  " << endl;
+            sendCHSEL(ch);
+            setCurrentRole(CHILD_NODE);
+            setHeadAddress(ch);
+            clusterNodeState = RUNNING;
+        }
+    }
+    break;
     case SEND_ASFREQ: {
         debugEV << "Enviando ASFREQ:" << myAddress << endl;
         //Criando Pacote ASFREQ
@@ -327,7 +364,7 @@ void ClusterMCFA::handleSelfMsg(cMessage *msg) {
             clusterNodeState = INITIALIZING;
             scheduleAt(simTime() + 4, delayTimer);
     }
-        break;
+    break;
     case PROC_MCFA:{
         debugEV << "PROC_MCFA" << endl;
         MCF();
@@ -374,6 +411,26 @@ void ClusterMCFA::handleMCFAControl(ClusterMCFAPkt *m) {
     debugEV << "Received Msg Type " << msgType << " From: " << m->getSrcAddr()
             << endl;
     switch (msgType) {
+    case MCFA_JREP:{
+        debugEV << "Recebi um JREP" << endl;
+        if (m->getERM() < candidateERM){
+            headCandidate = m->getSrcAddr();
+        }
+    }
+    break;
+    case MCFA_JREQ:{
+        debugEV << "Recebi um MCFA_JREQ de " << m->getSrcAddr() << endl;
+        if(getCurrentRole() == HEAD_NODE){
+            debugEV << "Respondendo JREQ: De:" << myAddress << " --> "
+                    << m->getSrcAddr() << endl;
+            ClusterMCFAPkt *pkt = new ClusterMCFAPkt("DirectCast JREP",
+                    MCFA_CTRL);
+            pkt->setMsgtype(MCFA_JREP);
+            pkt->setERM(Automata->getERMt());
+            sendDirectMessage(pkt, m->getSrcAddr());
+        }
+    }
+    break;
     case MCFA_ASFREQ:
         debugEV << "Recebi uma ASFREQ de " << m->getSrcAddr() << endl;
         if (m->getDestAddr() != myAddress) {
@@ -528,6 +585,7 @@ int ClusterMCFA::MCF() {
             sendCHSEL(ch);
             setCurrentRole(CHILD_NODE);
             setHeadAddress(ch);
+            clusterNodeState = RUNNING;
 
         }
         debugEV << "Encontrei o Meu HEAD:" << ch;

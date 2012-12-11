@@ -52,7 +52,9 @@ public:
 
 		INIT_MCFA,	//Init Cluster Formation
 
-		GET_RERM,
+		GET_RERM, //Atualiza todo o RERM
+
+		SEND_JREQ, // pede o Join para os proximos
 
 		PROC_MCFA,	//Processa Formacao
 
@@ -67,6 +69,8 @@ public:
 		RESET,
 
 		REPLY_JOIN,
+
+		RESOLV_JOIN,
 
 		/** @brief Polling */
 		POLL,
@@ -138,6 +142,9 @@ protected:
 
     /** @brief ChildList */
     NodeList childs;
+    //parametros para join
+    int headCandidate;
+    double candidateERM;
 
 	/** @brief percentage of childs lost accepted */
 	double childLostPercentage;
