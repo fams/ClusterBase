@@ -47,13 +47,14 @@ public:
 	//* @brief Adiciona entrada ao AC
 	double addAction(int node, MobInfo *mi, MobInfo* myMob);
 
-	void removeAction(int node);
+	int removeAction(int node);
 
 	//* @brief init Probability */
 	double initProb();
 
 	//* @brief Limpa Action Set
 	void clearAS();
+
 
 /* inutil	void updateERM(int node, MobInfo *mi, MobInfo* myMob); */
 
@@ -92,7 +93,8 @@ public:
 
     //permite atualizar ultima aparição do node
     void updateSeen(int);
-
+    //gambi
+    int removido;
 
 };
 

@@ -158,8 +158,8 @@ int MCFAAutomata::getDegree(){
 	return (ActionSet.size() - 1) ;
 
 }
-void MCFAAutomata::removeAction(int node){
-
+int MCFAAutomata::removeAction(int node){
+    int atual = ActionSet.size();
     //Remove o elemento da lista de ActionSet
     ActionSet.erase(std::remove(ActionSet.begin(), ActionSet.end(), node), ActionSet.end());
     //Guarda a sua chance de escolha
@@ -175,17 +175,21 @@ void MCFAAutomata::removeAction(int node){
     for(i=0;i<ActionSet.size();i++){
         ActionSetProperties[ActionSet[i]].Probability += ActionSetProperties[ActionSet[i]].Probability * (nodeP/(1-nodeP) );
     }
+    //removido += atual - ActionSet.size();
 }
 
 std::vector<int> MCFAAutomata::garbageCollector(simtime_t threshold){
     std::vector<int> removidos;
+    removido = 0;
     int i;
     for(i=0;i<ActionSet.size();i++){
         if((ActionSetProperties[ActionSet[i]].lastseen < threshold) && (ActionSet[i] != MyID)){
             removidos.push_back(ActionSet[i]);
             removeAction(ActionSet[i]);
+            //removido++;
         }
     }
+    removido = removidos.size();
     return removidos;
 }
 

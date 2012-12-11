@@ -158,13 +158,17 @@ void ClusterMCFA::ChildPolling(cMessage *msg){
     nodeGarbageCollector();
 
 }
+void ClusterMCFA::UndefinedPolling(cMessage *msg){
+    //sendMobInfo();
+    nodeGarbageCollector();
+}
 
 
 void ClusterMCFA::nodeGarbageCollector(){
     int i ;
     std::vector<int> removidos = Automata->garbageCollector(simTime() - getNodeTimeout());
     for(i=0;i<removidos.size();i++){
-        debugEV << "Removi da lista de proximos " << removidos[i] <<endl;
+        debugEV << "Removi da lista de proximos: " << removidos[i] <<endl;
     }
     switch(getCurrentRole()){
     case HEAD_NODE:{
@@ -195,7 +199,9 @@ void ClusterMCFA::nodeGarbageCollector(){
         break;
 
     }
-
+    debugEV << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!REMOCAO!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << endl;
+    debugEV << "Removi " << Automata->removido << endl;
+    debugEV << "nao vistos desde " << simTime().dbl() - getNodeTimeout() << endl;
 
 }
 

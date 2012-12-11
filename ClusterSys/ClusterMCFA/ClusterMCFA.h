@@ -179,6 +179,8 @@ protected:
 
 	virtual void HeadPolling(cMessage *msg);
 	virtual void ChildPolling(cMessage *msg);
+    virtual void UndefinedPolling(cMessage *msg);
+
 
 	int MCF();
 
