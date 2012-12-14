@@ -150,17 +150,18 @@ int MCFAAutomata::randNeigh(){
 	  return ActionSet[rn];
 	  */
       int i;
-      double prob;
+      double prob=0;
       //carregando total de probabilidades (deveria ser 1 sempre)
       for(i=0;i<ActionSet.size();i++){
           prob += ActionSetProperties[ActionSet[i]].Probability;
       }
-      double r = (double)rand()/(double)RAND_MAX;
+      double r = (double)rand()/RAND_MAX;
+
        r = r*prob;
        double position=0;
        for(i=0;i<ActionSet.size();i++){
            position += ActionSetProperties[ActionSet[i]].Probability;
-           if(prob <= position)
+           if(r <= position)
                return ActionSet[i];
        }
 
