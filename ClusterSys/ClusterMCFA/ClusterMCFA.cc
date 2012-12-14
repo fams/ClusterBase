@@ -514,7 +514,13 @@ void ClusterMCFA::handleMCFAControl(ClusterMCFAPkt *m) {
         if(getCurrentRole() == HEAD_NODE){
             updateSeen(m->getSrcAddr() );
         }
-        Automata->newEpoch(m->getSrcAddr(), mi, getMobInfo());
+        if(clusterNodeState == HEADSELECT) {
+            if(Automata->ActionExists(m->getSrcAddr())){
+                Automata->newEpoch(m->getSrcAddr(), mi, getMobInfo());
+            }
+        }else{
+            Automata->newEpoch(m->getSrcAddr(), mi, getMobInfo());
+        }
     }
         break;
     default:

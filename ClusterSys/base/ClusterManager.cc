@@ -84,6 +84,14 @@ ClusterManager::~ClusterManager()
 
 void ClusterManager::updateSeen(LAddress::L3Type childAddress)
 {
+    /*std::map<LAddress::L3Type, NodeEntry> it;
+    it = ChildList.find(childAddress);
+    if (it == ChildList.end()){
+        return;
+    }else {
+        ChildList[childAddress].lastSeen = simTime().dbl();
+    }
+    */
     ChildList[childAddress].lastSeen = simTime().dbl();
 }
 

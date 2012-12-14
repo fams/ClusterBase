@@ -178,6 +178,9 @@ int MCFAAutomata::removeAction(int node){
     //removido += atual - ActionSet.size();
 }
 
+int MCFAAutomata::ActionExists(int node){
+    return (std::find(ActionSet.begin(), ActionSet.end(), node) ==  ActionSet.end());
+}
 std::vector<int> MCFAAutomata::garbageCollector(simtime_t threshold){
     std::vector<int> removidos;
     removido = 0;

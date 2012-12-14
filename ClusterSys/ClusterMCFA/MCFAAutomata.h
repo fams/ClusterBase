@@ -91,7 +91,7 @@ public:
 	std::vector<int> garbageCollector(simtime_t);
 
     void setMyID(double MyID);
-
+    int ActionExists(int node);
     //permite atualizar ultima aparição do node
     void updateSeen(int);
     //gambi
