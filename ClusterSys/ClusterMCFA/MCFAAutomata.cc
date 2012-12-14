@@ -146,8 +146,24 @@ double MCFAAutomata::RM(MobInfo *a, MobInfo *b){
 int MCFAAutomata::randNeigh(){
 
 	  /* generate secret number: */
-	  int rn = rand() % ActionSet.size();
+	  /* int rn = rand() % ActionSet.size();
 	  return ActionSet[rn];
+	  */
+      int i;
+      double prob;
+      //carregando total de probabilidades (deveria ser 1 sempre)
+      for(i=0;i<ActionSet.size();i++){
+          prob += ActionSetProperties[ActionSet[i]].Probability;
+      }
+      double r = (double)rand()/(double)RAND_MAX;
+       r = r*prob;
+       double position=0;
+       for(i=0;i<ActionSet.size();i++){
+           position += ActionSetProperties[ActionSet[i]].Probability;
+           if(prob <= position)
+               return ActionSet[i];
+       }
+
 }
 
 int MCFAAutomata::getNeigh(int node){
