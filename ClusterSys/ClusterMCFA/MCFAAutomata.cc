@@ -13,8 +13,8 @@
 MCFAAutomata::MCFAAutomata(double R, double P) {
 	// TODO Auto-generated constructor stub
 	 /* initialize random seed: */
-	  srand ( time(NULL) );
-
+	  //srand ( time(NULL) );
+      srand ( 2 );
 	  //Parametros de reforco/punicao
 	  rewardP = R;
 	  penaltyP = P;
@@ -77,13 +77,15 @@ void MCFAAutomata::newEpoch(int node, MobInfo* myMob, MobInfo *mi)
 	ActionSetProperties[node].lastseen = simTime();
 	for(i=0;i<ActionSet.size();i++){
 		RMt = RM(myMob, ActionSetProperties[node].Mobility );
-
 		ActionSetProperties[node].ERMt = ((ActionSetProperties[node].ERMt * epoch) + RMt)/(epoch + 1);
 	}
 	epoch++;
 }
 void MCFAAutomata::updateSeen(int node){
-    ActionSetProperties[node].lastseen = simTime();
+    std::map<int, ActionSetData>::iterator it;
+    it = ActionSetProperties.find(node);
+    if(it != ActionSetProperties.end())
+        ActionSetProperties[node].lastseen = simTime();
 }
 
 //Atualiza o vetor de probabilidades quando Reforca
@@ -161,6 +163,7 @@ int MCFAAutomata::randNeigh(){
            if(r <= position)
                return ActionSet[i];
        }
+       return -1;
 
 }
 

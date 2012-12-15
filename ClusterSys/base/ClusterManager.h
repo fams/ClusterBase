@@ -120,9 +120,6 @@ public:
 
     //std::map<LAddress::L3Type,NodeEntry>::iterator getChild(LAddress::L3Type);
 
-    void updateSeen(LAddress::L3Type);
-    void updateSeen();
-
     NodePhase getCurrentPhase();
 
     NodeRole getCurrentRole();
@@ -153,6 +150,13 @@ protected:
     virtual void ChildPolling(cMessage *msg);
     virtual void UndefinedPolling(cMessage *msg);
     virtual int isHeadValid(int,int){return true;};
+    virtual void BroadPing();
+    virtual void NodePing(LAddress::L3Type);
+    virtual void Pong(LAddress::L3Type);
+    virtual void updateSeen(LAddress::L3Type);
+    virtual void updateSeen();
+    void updateSeenChild(LAddress::L3Type);
+
 
 
     /** @brief preenche o pacote */

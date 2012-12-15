@@ -111,14 +111,14 @@ void ClusterMCFA::initialize(int stage) {
 
         novoGPS = 0;
         sendMobTimer = new cMessage("sendMob-timer", UPDATE_POSITION);
-        scheduleAt(simTime() + 2, sendMobTimer);
+        scheduleAt(simTime() + 1 + dblrand()*2, sendMobTimer);
 
 
     }
 }
 
 ClusterMCFA::~ClusterMCFA() {
-
+    cancelAndDelete(reinitTimer);
     cancelAndDelete(delayTimer);
     cancelAndDelete(pollingTimer);
     cancelAndDelete(resetTimer);
@@ -148,7 +148,43 @@ void ClusterMCFA::handleReset(cMessage *msg) {
 
 void ClusterMCFA::finish() {
 }
+
+void ClusterMCFA::updateSeen(LAddress::L3Type node){
+    ClusterManager::updateSeen(node);
+    Automata->updateSeen(node);
+}
+
+void ClusterMCFA::handlePingMsg(ClusterPkt *msg) {
+    int msgType = msg->getMsgtype();
+    updateSeen(msg->getSrcAddr());
+    switch (getCurrentRole()) {
+    case CHILD_NODE: {
+        if (msg->getHeadId() != getHeadAddress())
+            return;
+        if (msgType == CLUSTER_PING) {
+            updateSeen(msg->getSrcAddr());
+            debugEV << "Recebi um PING! de " << msg->getSrcAddr()
+                    << " Meu headAddress eh: " << getHeadAddress() << endl;
+            Pong(msg->getSrcAddr());
+        }
+    }
+        break;
+    case HEAD_NODE: {
+        if (msgType == CLUSTER_PONG) {
+            debugEV << "Recebi um PONG!! de " << msg->getSrcAddr()
+                    << " Meu headAddress eh: " << getHeadAddress() << endl;
+            /*Verifica se recebeu um pong de um filhote */
+
+            }
+        }
+
+        break;
+
+    }
+}
+
 void ClusterMCFA::HeadPolling(cMessage *msg){
+    BroadPing();
     //sendMobInfo();
     nodeGarbageCollector();
 }
@@ -171,11 +207,6 @@ void ClusterMCFA::nodeGarbageCollector(){
     //debugEV << Automata->msg << endl;;
     for(i=0;i<removidos.size();i++){
         debugEV << "Removi da lista de proximos: " << removidos[i] <<endl;
-        /*
-        std::map<int, double>::iterator it;
-        it = ERMi.find(removidos[i]);
-        ERMi.erase(it);
-        */
     }
     switch(getCurrentRole()){
     case HEAD_NODE:{
@@ -254,13 +285,14 @@ void ClusterMCFA::handleSelfMsg(cMessage *msg) {
         debugEV << "Minha Velcidade e " << gps.getSpeed() << "\n";
         debugEV << "Minha Direcao e " << gps.getDirection() << "\n";
 
-        if (novoGPS > 0) {
+        if ((novoGPS > 0) || (lastsend < (simTime() - (getNodeTimeout()/2)))) {
             novoGPS = 0;
             debugEV << "Enviando Mobile Info" << endl;
             sendMobInfo();
             if(clusterNodeState==HEADSELECT and currStage == 0){
                 MCF();
             }
+
             //Envio Update para todo mundo de tempos em tempos, a menos que envie aqui
             //cancelEvent(pollingTimer);
             //scheduleAt(simTime()+pollingTime,pollingTimer);
@@ -357,7 +389,8 @@ void ClusterMCFA::handleSelfMsg(cMessage *msg) {
     break;
     case GET_RERM:{
         //Monta o ERMt
-            debugEV << "Enviando RERM para" << ch << endl;
+            lastsend = simTime();
+            debugEV << myAddress <<" enviando RERM BroadCAST" << endl;
             ClusterMCFAPkt *pkt = new ClusterMCFAPkt("DirectCast RERM",
                     MCFA_CTRL);
             pkt->setMsgtype(MCFA_RERM);
@@ -458,7 +491,7 @@ void ClusterMCFA::handleMCFAControl(ClusterMCFAPkt *m) {
         debugEV << "Adicionando Action set do host " << m->getSrcAddr() << endl;
         debugEV << "Recebi speed:" << mi->speed << " direction:" << mi->direction <<endl;
         double ret = Automata->addAction(m->getSrcAddr(), mi, getMobInfo());
-        debugEV << "RM: " << ret << endl;
+        debugEV << "RM: " << ret <<  " ERM" << Automata->getERMt() << endl;
         //Atualizando nome
         char buf[20];
         sprintf(buf, "MyAddr: %i\nERMt: %f", getAddress(), Automata->getERMt());
@@ -473,7 +506,7 @@ void ClusterMCFA::handleMCFAControl(ClusterMCFAPkt *m) {
             //cancelAndDelete(delayTimer);
             cancelEvent(reinitTimer);
             //SE chegou mensagem, o sujeito está vivo
-            Automata->updateSeen(m->getSrcAddr());
+            updateSeen(m->getSrcAddr());
             //Pego o ERMt da mensagem
             w = m->getERM();
             //Chamo de volta o MCF para atualizar
@@ -491,6 +524,7 @@ void ClusterMCFA::handleMCFAControl(ClusterMCFAPkt *m) {
                     << m->getSrcAddr()  <<endl;
             ClusterMCFAPkt *pkt = new ClusterMCFAPkt("DirectCast RERM",
                     MCFA_CTRL);
+            updateSeen(m->getSrcAddr());
             pkt->setMsgtype(MCFA_RERM);
             debugEV << "Enviando ERM de " << Automata->getERMt() << endl;
             pkt->setERM(Automata->getERMt());
@@ -526,14 +560,20 @@ void ClusterMCFA::handleMCFAControl(ClusterMCFAPkt *m) {
         /* Modo original do MCF
          *
          */
+
+        debugEV << "ERM atual " << Automata->getERMt() <<endl;
         if(clusterNodeState == HEADSELECT) {
+            debugEV << "Estou em HEADSELECT atualizando EPOCH" << endl;
             MCF();
             if(Automata->ActionExists(m->getSrcAddr())){
                 Automata->newEpoch(m->getSrcAddr(), mi, getMobInfo());
             }
         }else{
+            debugEV << "Estou em ASFREQ criando EPOCH" << endl;
             Automata->newEpoch(m->getSrcAddr(), mi, getMobInfo());
         }
+        debugEV << "ERM novo " << Automata->getERMt() <<endl;
+
     }
         break;
     default:
@@ -544,10 +584,16 @@ void ClusterMCFA::handleMCFAControl(ClusterMCFAPkt *m) {
 }
 
 int ClusterMCFA::MCF() {
+    debugEV << "----------INICIANDO MCF------------" << endl;
     if (currStage == 0) {
-        debugEV << "----------INICIANDO MCF------------" << endl;
+        debugEV << "----------STAGE 0------------" << endl;
         ch = Automata->randNeigh();
         //Selected CH is me, set w as my ERM and go to stage 2
+        if(ch < 0){
+            debugEV << "Recebi um vizinho vazio! " << endl;
+            exit(1);
+        }
+
         if (ch == myAddress) {
             w = Automata->getERMt();
             currStage = 1;
@@ -564,6 +610,7 @@ int ClusterMCFA::MCF() {
             return 1;
         }
     }
+    debugEV << "----------STAGE 1------------" << endl;
     debugEV << "w de ch(" << ch << "):" << w << " T: " << T << endl;
     if (w <= T) {
         debugEV << "Reforco em ch " << ch << endl;
@@ -630,6 +677,7 @@ MobInfo* ClusterMCFA::getMobInfo() {
 
 void ClusterMCFA::sendMobInfo() {
     debugEV << "Enviando novo MOBINFO" << endl;
+    lastsend = simTime();
     ClusterMCFAPkt *pkt = new ClusterMCFAPkt("BROADCAST: MOBINFO", MCFA_CTRL);
     pkt->setMsgtype(MCFA_MOBINFO);
     pkt->setDirection(gps.getDirection());

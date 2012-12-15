@@ -40,8 +40,8 @@ class ClusterMCFA : public ClusterManager
 
 	/** Statistics */
 	//simsignal_t changeTypeSignal;
-	simsignal_t rxMessageSignal;
-	simsignal_t txMessageSignal;
+	//simsignal_t rxMessageSignal;
+	//simsignal_t txMessageSignal;
 
 public:
 	/** @brief The message kinds used by this layer.*/
@@ -118,6 +118,9 @@ protected:
 	/* @brief tempo de vida do cluster (tempo de vida do node) */
     simtime_t clusterLifeTime;
 
+    /* ultimo envio de anuncio  */
+    simtime_t lastsend;
+
 	/** @brief SHortcut to blackboards Packet category.*/
 	int catPacket;
 
@@ -174,7 +177,7 @@ protected:
     double P;
 
 protected:
-
+//Handlers
 	/** @brief Handle self messages such as timer... */
 	virtual void handleSelfMsg(cMessage *msg);
 
@@ -183,10 +186,17 @@ protected:
 
 	/** @brief Handle event RESET */
 	virtual void handleReset(cMessage *msg);
+    //virtual void handlePolling(cMessage*);
+    virtual void handlePingMsg(ClusterPkt *msg);
 
+//Polling Types
 	virtual void HeadPolling(cMessage *msg);
 	virtual void ChildPolling(cMessage *msg);
     virtual void UndefinedPolling(cMessage *msg);
+
+    virtual void updateSeen(LAddress::L3Type);
+
+
 
 
 	int MCF();

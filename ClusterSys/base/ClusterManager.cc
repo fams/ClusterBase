@@ -81,18 +81,20 @@ ClusterManager::~ClusterManager()
 {
 }
 
-
-void ClusterManager::updateSeen(LAddress::L3Type childAddress)
-{
-    /*std::map<LAddress::L3Type, NodeEntry> it;
+void ClusterManager::updateSeenChild(LAddress::L3Type childAddress){
+    std::map<LAddress::L3Type, NodeEntry>::iterator it;
     it = ChildList.find(childAddress);
     if (it == ChildList.end()){
         return;
     }else {
         ChildList[childAddress].lastSeen = simTime().dbl();
     }
-    */
-    ChildList[childAddress].lastSeen = simTime().dbl();
+}
+
+void ClusterManager::updateSeen(LAddress::L3Type node)
+{
+    updateSeenChild(node);
+    //ChildList[childAddress].lastSeen = simTime().dbl();
 }
 
 
@@ -165,6 +167,12 @@ void ClusterManager::updateSeen(){
     headLastSeen = simTime().dbl();
 }
 
+void ClusterManager::Pong(LAddress::L3Type node){
+    ClusterPkt *pkt = new ClusterPkt("DIRECT: CHILD PONG",
+            CLUSTER_BASE_PING);
+    setPktValues(pkt, CLUSTER_PONG, getHeadAddress(), myAddress);
+    sendDirectMessage(pkt, node);
+}
 void ClusterManager::handlePingMsg(ClusterPkt *msg) {
     int msgType = msg->getMsgtype();
     switch (getCurrentRole()) {
@@ -175,10 +183,7 @@ void ClusterManager::handlePingMsg(ClusterPkt *msg) {
             updateSeen();
             debugEV << "Recebi um PING! de " << msg->getSrcAddr()
                     << " Meu headAddress eh: " << getHeadAddress() << endl;
-            ClusterPkt *pkt = new ClusterPkt("DIRECT: CHILD PONG",
-                    CLUSTER_BASE_PING);
-            setPktValues(pkt, CLUSTER_PONG, getHeadAddress(), myAddress);
-            sendDirectMessage(pkt, msg->getSrcAddr());
+            Pong(msg->getSrcAddr());
         }
     }
         break;
@@ -324,6 +329,14 @@ void ClusterManager::nodeGarbageCollector(){
         }
     }
 }
+void ClusterManager::NodePing(LAddress::L3Type node){
+
+}
+void ClusterManager::BroadPing(){
+    ClusterPkt *pkt = new ClusterPkt("DIRECT: HEAD POLLING", CLUSTER_BASE_PING);
+    setPktValues(pkt,CLUSTER_PING, getHeadAddress(), myAddress);
+    sendBroadcast(pkt);
+}
 void ClusterManager::HeadPolling(cMessage *msg){
     debugEV << "Handle head Polling" << endl;
     nodeGarbageCollector();
@@ -331,9 +344,7 @@ void ClusterManager::HeadPolling(cMessage *msg){
     debugEV << "Temos: " << ChildList.size() << endl;
     ActiveChilds = TotalChilds = ChildList.size();
 
-    ClusterPkt *pkt = new ClusterPkt("DIRECT: HEAD POLLING", CLUSTER_BASE_PING);
-    setPktValues(pkt,CLUSTER_PING, getHeadAddress(), myAddress);
-    sendBroadcast(pkt);
+    BroadPing();
     debugEV << "TotalChilds: "<< TotalChilds << "\t ActiveChilds: " << ActiveChilds << endl;
     if(isHeadValid(TotalChilds,ActiveChilds)){
         cancelEvent(resetTimer);
@@ -396,6 +407,7 @@ void ClusterManager::sendDirectMessage(ApplPkt* pkt, LAddress::L3Type destAddr){
     //Contabilizando pacotes enviados
     emit(txMessageSignal,1);
     sendNetLayer( pkt );
+    debugEV << "Enviei agora" <<endl;
 }
 
 
