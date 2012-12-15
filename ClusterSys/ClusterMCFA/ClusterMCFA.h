@@ -36,7 +36,7 @@ class ClusterMCFA : public ClusterManager
 {
 
 	MCFAAutomata *Automata;
-	std::map<int,double> ERMi; //ERM dos nodes
+	//std::map<int,double> ERMi; //ERM dos nodes
 
 	/** Statistics */
 	//simsignal_t changeTypeSignal;

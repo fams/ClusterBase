@@ -113,6 +113,7 @@ void ClusterMCFA::initialize(int stage) {
         sendMobTimer = new cMessage("sendMob-timer", UPDATE_POSITION);
         scheduleAt(simTime() + 2, sendMobTimer);
 
+
     }
 }
 
@@ -167,8 +168,14 @@ void ClusterMCFA::UndefinedPolling(cMessage *msg){
 void ClusterMCFA::nodeGarbageCollector(){
     int i ;
     std::vector<int> removidos = Automata->garbageCollector(simTime() - getNodeTimeout());
+    //debugEV << Automata->msg << endl;;
     for(i=0;i<removidos.size();i++){
         debugEV << "Removi da lista de proximos: " << removidos[i] <<endl;
+        /*
+        std::map<int, double>::iterator it;
+        it = ERMi.find(removidos[i]);
+        ERMi.erase(it);
+        */
     }
     switch(getCurrentRole()){
     case HEAD_NODE:{
@@ -199,6 +206,7 @@ void ClusterMCFA::nodeGarbageCollector(){
         break;
 
     }
+
     debugEV << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!REMOCAO!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << endl;
     debugEV << "Removi " << Automata->removido << endl;
     debugEV << "nao vistos desde " << simTime().dbl() - getNodeTimeout() << endl;
@@ -250,6 +258,9 @@ void ClusterMCFA::handleSelfMsg(cMessage *msg) {
             novoGPS = 0;
             debugEV << "Enviando Mobile Info" << endl;
             sendMobInfo();
+            if(clusterNodeState==HEADSELECT and currStage == 0){
+                MCF();
+            }
             //Envio Update para todo mundo de tempos em tempos, a menos que envie aqui
             //cancelEvent(pollingTimer);
             //scheduleAt(simTime()+pollingTime,pollingTimer);
@@ -321,8 +332,10 @@ void ClusterMCFA::handleSelfMsg(cMessage *msg) {
         debugEV << "INIT_MCFA" << endl;
         //Append me as an action
         double ret = Automata->addAction(myAddress, getMobInfo(), getMobInfo());
-        ERMi[myAddress] = Automata->getERMt();
-        debugEV << "myAddress " << myAddress << " ERMt " << ERMi[myAddress] << endl;
+        //FIXME
+        //ERMi[myAddress] = Automata->getERMt();
+        Automata->setERMi(myAddress,Automata->getERMt());
+        debugEV << "myAddress " << myAddress << " ERMt " << Automata->getERMi(myAddress) << endl;
         debugEV << "RM:" << ret << " ERMt:" << Automata->getERMt() << endl;
         cancelAndDelete(delayTimer);
         //Call Cluster Formation at stage and wait for next stage
@@ -330,18 +343,8 @@ void ClusterMCFA::handleSelfMsg(cMessage *msg) {
         clusterNodeState = HEADSELECT;
         double myp = Automata->initProb();
         debugEV << "P inicial de: " << myp <<  " Nodes " << Automata->getDegree() << endl;
-        /*Calculo de T inicial
-         *
-         */
-        double ERMk = 0;
-        //debugEV << "ERMi[ch]" << ERMi[ch] << endl;
-        for (std::map<int, double>::iterator it = ERMi.begin(); it != ERMi.end(); it++) {
-            debugEV << (*it).first << " it = " << (*it).second << endl;
-            ERMk += (*it).second;
-        }
-        //ERMk += Automata->getERMt();
-        //T = ERMk / (Automata->getDegree() + 1);
-        T = ERMk / ERMi.size();
+
+        T = Automata->getT();
 /*
  * Agendamento de PROC_MCFA
  */
@@ -368,9 +371,12 @@ void ClusterMCFA::handleSelfMsg(cMessage *msg) {
     case PROC_MCFA:{
         debugEV << "PROC_MCFA" << endl;
         MCF();
-        if(currStage == 0){
+        /*Removendo auto Call
+         *
+         if(currStage == 0){
             scheduleAt(simTime()+ 0.2, delayTimer);
         }
+         */
     }
     break;
     case PROC_MCFA2:{
@@ -464,7 +470,7 @@ void ClusterMCFA::handleMCFAControl(ClusterMCFAPkt *m) {
                 << ch << " w da mensagem: " << m->getERM() << endl;
         if (m->getSrcAddr() == ch && currStage == 1 && m->getERM() != 0 ) { //se veio do meu ch eu volto para a construcao do cluster
             debugEV << "Retorno de RERM" <<endl;
-            cancelAndDelete(delayTimer);
+            //cancelAndDelete(delayTimer);
             cancelEvent(reinitTimer);
             //SE chegou mensagem, o sujeito está vivo
             Automata->updateSeen(m->getSrcAddr());
@@ -472,12 +478,14 @@ void ClusterMCFA::handleMCFAControl(ClusterMCFAPkt *m) {
             w = m->getERM();
             //Chamo de volta o MCF para atualizar
             MCF();
+            /* Removi o AutoCall
             delayTimer = new cMessage("delay-timer", PROC_MCFA);
             //Se atingiu um HEAD, para de procurar por um
             if(currStage < 2){
                 debugEV << "CurrStage: " << currStage <<"Reagendando MFC" <<endl;
                 scheduleAt(simTime(), delayTimer);
             }
+            */
         } else if(m->getERM() == 0){
             debugEV << "Respondendo RERM: De:" << myAddress << " --> "
                     << m->getSrcAddr()  <<endl;
@@ -491,7 +499,8 @@ void ClusterMCFA::handleMCFAControl(ClusterMCFAPkt *m) {
             debugEV << "Atualizando ERMt\n";
             int id  = m->getSrcAddr();
             w = m->getERM();
-            ERMi[id] = w;
+            //ERMi[id] = w;
+            Automata->setERMi(id,w);
         }
     }
         break;
@@ -514,7 +523,11 @@ void ClusterMCFA::handleMCFAControl(ClusterMCFAPkt *m) {
         if(getCurrentRole() == HEAD_NODE){
             updateSeen(m->getSrcAddr() );
         }
+        /* Modo original do MCF
+         *
+         */
         if(clusterNodeState == HEADSELECT) {
+            MCF();
             if(Automata->ActionExists(m->getSrcAddr())){
                 Automata->newEpoch(m->getSrcAddr(), mi, getMobInfo());
             }
@@ -545,6 +558,7 @@ int ClusterMCFA::MCF() {
                     MCFA_CTRL);
             pkt->setMsgtype(MCFA_RERM);
             sendDirectMessage(pkt, ch);
+            cancelEvent(reinitTimer);
             scheduleAt(simTime() + 4 , reinitTimer);
             currStage = 1;
             return 1;
@@ -562,7 +576,10 @@ int ClusterMCFA::MCF() {
         Automata->penalize(ch);
         debugEV << "Novo " << Automata->getProbability(ch) << endl;
     }
-    ERMi[ch] = w;
+    //FIXME
+    //ERMi[ch] = w;
+    Automata->setERMi(ch,w);
+    /*
     double ERMk = 0;
     debugEV << "ERMi[ch]" << ERMi[ch] << endl;
     for (std::map<int, double>::iterator it = ERMi.begin(); it != ERMi.end(); it++) {
@@ -572,9 +589,11 @@ int ClusterMCFA::MCF() {
     //ERMk += Automata->getERMt();
     //T = ERMk / (Automata->getDegree() + 1);
     T = ERMk / ERMi.size();
-    debugEV << "Novo ERMk eh: " << ERMk << endl;
 
+    debugEV << "Novo ERMk eh: " << ERMk << endl;
+     */
     //T = ((T*stageK)+Automata->getERMt()/stageK);
+    T = Automata->getT();
     stageK++;
 
     if (Automata->getProbability(ch) < P) {

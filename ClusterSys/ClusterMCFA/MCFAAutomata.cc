@@ -85,9 +85,6 @@ void MCFAAutomata::newEpoch(int node, MobInfo* myMob, MobInfo *mi)
 void MCFAAutomata::updateSeen(int node){
     ActionSetProperties[node].lastseen = simTime();
 }
-double MCFAAutomata::getT(){
-
-}
 
 //Atualiza o vetor de probabilidades quando Reforca
 void MCFAAutomata::reward(int Action){
@@ -189,9 +186,14 @@ int MCFAAutomata::removeAction(int node){
 
     //distribui a probabilidade de forma proporcional
     int i=0;
+    msg  << "Antes: " ;
+    msg << ActionSetProperties.size();
     for(i=0;i<ActionSet.size();i++){
         ActionSetProperties[ActionSet[i]].Probability += ActionSetProperties[ActionSet[i]].Probability * (nodeP/(1-nodeP) );
     }
+    msg << " depois:";
+    msg << ActionSetProperties.size();
+    msg << "\n";
     //removido += atual - ActionSet.size();
 }
 
@@ -215,4 +217,25 @@ std::vector<int> MCFAAutomata::garbageCollector(simtime_t threshold){
 
 void MCFAAutomata::setMyID(double MyID){
 	this->MyID = MyID;
+}
+
+void MCFAAutomata::setERMi(int node, double w){
+    ERMi[node] = w;
+}
+
+double MCFAAutomata::getERMi(int node){
+    return ERMi[node];
+}
+
+double MCFAAutomata::getT(){
+    double ERMk = 0;
+    //debugEV << "ERMi[ch]" << ERMi[ch] << endl;
+    for(std::vector<int>::iterator it = ActionSet.begin();it != ActionSet.end(); it++){
+    //for (std::map<int, double>::iterator it = ERMi.begin(); it != ERMi.end(); it++) {
+         //debugEV << (*it).first << " it = " << (*it).second << endl;
+        ERMk += ERMi[*it];
+    }
+    //ERMk += Automata->getERMt();
+    //T = ERMk / (Automata->getDegree() + 1);
+    return  ERMk / ActionSet.size();
 }
