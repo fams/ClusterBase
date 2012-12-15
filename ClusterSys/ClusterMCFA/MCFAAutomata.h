@@ -9,8 +9,6 @@
 #define MCFAAUTOMATA_H_
 #include <vector>
 #include <map>
-#include <iostream>
-#include <string>
 #include <algorithm>
 #include <omnetpp.h>
 
@@ -33,8 +31,6 @@ typedef struct MobInfo {double speed; double direction;} MobInfo;
 typedef struct ActionSetData {double Probability; double ERMt; MobInfo *Mobility; simtime_t lastseen;};
 
 class MCFAAutomata {
-    //ERMi
-    std::map<int,double> ERMi; //ERM dos nodes
 	//Action Set
 	std::vector<int> ActionSet;
 	std::map<int, ActionSetData> ActionSetProperties;
@@ -43,7 +39,6 @@ class MCFAAutomata {
 	double penaltyP;
 	double MyID;
 	int epoch;
-
 
 public:
 	MCFAAutomata(double R, double P );
@@ -79,7 +74,7 @@ public:
 	double getERMtj(int node);
 
 	/** @brief Retorna a media movel T */
-//	double getT();
+	double getT();
 
 	/** @brief calcula a mobilidade relativa entre dois nodes */
 	double RM(MobInfo* a, MobInfo* b);
@@ -101,18 +96,6 @@ public:
     void updateSeen(int);
     //gambi
     int removido;
-
-    //Atualiza ERMi
-    void setERMi(int,double);
-
-    //Retorna o ERMi para um node
-    double getERMi(int);
-
-    //Obtem o Parametro T
-    double getT();
-
-    std::ostringstream msg;
-
 
 };
 
