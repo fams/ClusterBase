@@ -56,6 +56,7 @@ enum MCFAMessageTypes {
  * 	double ERM;
  * 	double Speed;
  * 	double Direction;
+ * 	int Question;
  * };
  * </pre>
  */
@@ -68,6 +69,7 @@ class ClusterMCFAPkt : public ::ClusterPkt
     double ERM_var;
     double Speed_var;
     double Direction_var;
+    int Question_var;
 
   private:
     void copy(const ClusterMCFAPkt& other);
@@ -98,6 +100,8 @@ class ClusterMCFAPkt : public ::ClusterPkt
     virtual void setSpeed(double Speed);
     virtual double getDirection() const;
     virtual void setDirection(double Direction);
+    virtual int getQuestion() const;
+    virtual void setQuestion(int Question);
 };
 
 inline void doPacking(cCommBuffer *b, ClusterMCFAPkt& obj) {obj.parsimPack(b);}

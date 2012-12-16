@@ -38,4 +38,5 @@ packet ClusterMCFAPkt extends ClusterPkt {
 	double ERM;
 	double Speed;
 	double Direction;
+	int Question;
 };

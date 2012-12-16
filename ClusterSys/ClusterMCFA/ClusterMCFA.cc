@@ -94,7 +94,8 @@ void ClusterMCFA::initialize(int stage) {
         //seta o owner do automata
         Automata->setMyID(myAddress);
         //DelayTimer inicial
-        double schedtime = 2.5 + dblrand()*2;
+        double schedtime = 3.5 + dblrand()*2;
+
         scheduleAt(simTime() + schedtime, delayTimer);
         WATCH(myAddress);
 
@@ -141,7 +142,7 @@ void ClusterMCFA::handleReset(cMessage *msg) {
     setTTString(tt);
 
     cancelAndDelete(delayTimer);
-    delayTimer = new cMessage("PROC_MCFA", PROC_MCFA);
+    delayTimer = new cMessage("Join", SEND_JREQ);
     scheduleAt(simTime(),delayTimer);
 
 }
@@ -306,7 +307,7 @@ void ClusterMCFA::handleSelfMsg(cMessage *msg) {
         break;
     case SEND_JREQ:{
         headCandidate = -1;
-        candidateERM = -1;
+        candidateERM = 16000;
         debugEV << "Enviando JREQ:" << myAddress << endl;
         //Criando Pacote ASFREQ
         ClusterMCFAPkt *pkt = new ClusterMCFAPkt("BROADCAST: JREQ",
@@ -318,8 +319,9 @@ void ClusterMCFA::handleSelfMsg(cMessage *msg) {
         //Limpando AS
         Automata->clearAS();
         //Agenda Mudanca de estado
-        debugEV << "Agendando Definicao Join em :" << asfreqTime << endl;
+        debugEV << "Agendando Definicao Join para : " << simTime()+asfreqTime << endl;
         cancelAndDelete(delayTimer);
+        cancelEvent(pollingTimer);
         delayTimer = new cMessage("delay-timer", RESOLV_JOIN);
         clusterNodeState = JOIN;
         scheduleAt(simTime() + asfreqTime, delayTimer);
@@ -327,14 +329,14 @@ void ClusterMCFA::handleSelfMsg(cMessage *msg) {
     break;
     case RESOLV_JOIN:{
         if(headCandidate < 0){
-            debugEV << "Agendando Formacao  " << endl;
+            debugEV << "Nao tenho candidatos, agendando formacao  " << endl;
             cancelAndDelete(delayTimer);
             delayTimer = new cMessage("delay-timer", GET_RERM);
             clusterNodeState = ACTSETFORM;
             scheduleAt(simTime(), delayTimer);
         }else{
             debugEV << "Encontrei um Head  " << endl;
-            sendCHSEL(ch);
+            sendCHSEL(headCandidate);
             setCurrentRole(CHILD_NODE);
             setHeadAddress(ch);
             clusterNodeState = RUNNING;
@@ -382,6 +384,7 @@ void ClusterMCFA::handleSelfMsg(cMessage *msg) {
  */
         delayTimer = new cMessage("PROC_MCFA", PROC_MCFA);
         scheduleAt(simTime(), delayTimer);
+        cancelEvent(pollingTimer);
         debugEV << "Agendando polling para " << simTime().dbl() + pollingTime << endl;
         scheduleAt(simTime() + pollingTime, pollingTimer);
 
@@ -393,6 +396,7 @@ void ClusterMCFA::handleSelfMsg(cMessage *msg) {
             debugEV << myAddress <<" enviando RERM BroadCAST" << endl;
             ClusterMCFAPkt *pkt = new ClusterMCFAPkt("DirectCast RERM",
                     MCFA_CTRL);
+            pkt->setQuestion(1);
             pkt->setMsgtype(MCFA_RERM);
             sendBroadcast(pkt);
             cancelAndDelete(delayTimer);
@@ -454,6 +458,8 @@ void ClusterMCFA::handleMCFAControl(ClusterMCFAPkt *m) {
         debugEV << "Recebi um JREP" << endl;
         if (m->getERM() < candidateERM){
             headCandidate = m->getSrcAddr();
+            candidateERM = m->getERM();
+            debugEV << "Novo candidado" << headCandidate << endl;
         }
     }
     break;
@@ -490,6 +496,7 @@ void ClusterMCFA::handleMCFAControl(ClusterMCFAPkt *m) {
         mi->speed = m->getSpeed();
         debugEV << "Adicionando Action set do host " << m->getSrcAddr() << endl;
         debugEV << "Recebi speed:" << mi->speed << " direction:" << mi->direction <<endl;
+        debugEV << "Eu tenho speed:" << getMobInfo()->speed << " direction:" << getMobInfo()->direction <<endl;
         double ret = Automata->addAction(m->getSrcAddr(), mi, getMobInfo());
         debugEV << "RM: " << ret <<  " ERM" << Automata->getERMt() << endl;
         //Atualizando nome
@@ -501,40 +508,48 @@ void ClusterMCFA::handleMCFAControl(ClusterMCFAPkt *m) {
     case MCFA_RERM: {
         debugEV << "Recebi um RERM de " << m->getSrcAddr() << " Meu ch eh "
                 << ch << " w da mensagem: " << m->getERM() << endl;
-        if (m->getSrcAddr() == ch && currStage == 1 && m->getERM() != 0 ) { //se veio do meu ch eu volto para a construcao do cluster
-            debugEV << "Retorno de RERM" <<endl;
-            //cancelAndDelete(delayTimer);
-            cancelEvent(reinitTimer);
-            //SE chegou mensagem, o sujeito está vivo
-            updateSeen(m->getSrcAddr());
-            //Pego o ERMt da mensagem
-            w = m->getERM();
-            //Chamo de volta o MCF para atualizar
-            MCF();
-            /* Removi o AutoCall
-            delayTimer = new cMessage("delay-timer", PROC_MCFA);
-            //Se atingiu um HEAD, para de procurar por um
-            if(currStage < 2){
-                debugEV << "CurrStage: " << currStage <<"Reagendando MFC" <<endl;
-                scheduleAt(simTime(), delayTimer);
-            }
-            */
-        } else if(m->getERM() == 0){
+
+        if (m->getQuestion() == 1) {
+            //Isso é um pedido de RERM
             debugEV << "Respondendo RERM: De:" << myAddress << " --> "
-                    << m->getSrcAddr()  <<endl;
+                    << m->getSrcAddr() << endl;
             ClusterMCFAPkt *pkt = new ClusterMCFAPkt("DirectCast RERM",
                     MCFA_CTRL);
             updateSeen(m->getSrcAddr());
             pkt->setMsgtype(MCFA_RERM);
+            pkt->setQuestion(0);
             debugEV << "Enviando ERM de " << Automata->getERMt() << endl;
             pkt->setERM(Automata->getERMt());
             sendDirectMessage(pkt, m->getSrcAddr());
-        }else if(m->getERM() != 0){
-            debugEV << "Atualizando ERMt\n";
-            int id  = m->getSrcAddr();
-            w = m->getERM();
-            //ERMi[id] = w;
-            Automata->setERMi(id,w);
+        } else {
+            //Isso é um retorno
+
+            if (m->getSrcAddr() == ch && currStage == 1) { //se veio do meu ch eu volto para a construcao do cluster
+                debugEV << "Retorno de RERM" << endl;
+                //cancelAndDelete(delayTimer);
+                cancelEvent(reinitTimer);
+                //SE chegou mensagem, o sujeito está vivo
+                updateSeen(m->getSrcAddr());
+                //Pego o ERMt da mensagem
+                w = m->getERM();
+                //Chamo de volta o MCF para atualizar
+                MCF();
+                /* Removi o AutoCall
+                 delayTimer = new cMessage("delay-timer", PROC_MCFA);
+                 //Se atingiu um HEAD, para de procurar por um
+                 if(currStage < 2){
+                 debugEV << "CurrStage: " << currStage <<"Reagendando MFC" <<endl;
+                 scheduleAt(simTime(), delayTimer);
+                 }
+                 */
+            }
+            else {
+                debugEV << "Atualizando ERMt\n";
+                int id = m->getSrcAddr();
+                w = m->getERM();
+                //ERMi[id] = w;
+                Automata->setERMi(id, w);
+            }
         }
     }
         break;
@@ -603,6 +618,7 @@ int ClusterMCFA::MCF() {
             ClusterMCFAPkt *pkt = new ClusterMCFAPkt("DirectCast RERM",
                     MCFA_CTRL);
             pkt->setMsgtype(MCFA_RERM);
+            pkt->setQuestion(1);
             sendDirectMessage(pkt, ch);
             cancelEvent(reinitTimer);
             scheduleAt(simTime() + 4 , reinitTimer);
@@ -680,7 +696,7 @@ void ClusterMCFA::sendMobInfo() {
     lastsend = simTime();
     ClusterMCFAPkt *pkt = new ClusterMCFAPkt("BROADCAST: MOBINFO", MCFA_CTRL);
     pkt->setMsgtype(MCFA_MOBINFO);
-    pkt->setDirection(gps.getDirection());
+    pkt->setDirection(((gps.getSpeed()==0)?0:gps.getDirection()));
     pkt->setSpeed(gps.getSpeed());
     pkt->setOriginId(myAddress);
     sendBroadcast(pkt);
