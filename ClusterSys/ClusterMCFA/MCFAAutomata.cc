@@ -43,6 +43,8 @@ double MCFAAutomata::addAction(int node, MobInfo *mi, MobInfo* myMob){
 	double ERMt = RM(myMob, mi);
 	ActionSetProperties[node].ERMt = ERMt;
 	ActionSetProperties[node].lastseen = simTime();
+	delete mi;
+	delete myMob;
 	return ERMt;
 }
 
@@ -80,6 +82,8 @@ void MCFAAutomata::newEpoch(int node, MobInfo* myMob, MobInfo *mi)
 		ActionSetProperties[node].ERMt = ((ActionSetProperties[node].ERMt * epoch) + RMt)/(epoch + 1);
 	}
 	epoch++;
+	delete myMob;
+	delete mi;
 }
 void MCFAAutomata::updateSeen(int node){
     std::map<int, ActionSetData>::iterator it;
@@ -158,6 +162,8 @@ int MCFAAutomata::randNeigh(){
 
        r = r*prob;
        double position=0;
+       if(ActionSet.size()==1)
+           return ActionSet[0];
        for(i=0;i<ActionSet.size();i++){
            position += ActionSetProperties[ActionSet[i]].Probability;
            if(r <= position)

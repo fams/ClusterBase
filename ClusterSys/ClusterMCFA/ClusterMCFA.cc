@@ -134,12 +134,14 @@ void ClusterMCFA::handleReset(cMessage *msg) {
     setCurrentRole(UNDEFINED_NODE);
     clusterNodeState = UNDEFINED;
     currStage = 0;
-
+    if (ev.isGUI()) {
     findHost()->bubble("Reseting");
+    }
     //Display String
     char* tt = new char(20);
     sprintf(tt, "MyAddr is %i", myAddress);
     setTTString(tt);
+
 
     cancelAndDelete(delayTimer);
     delayTimer = new cMessage("Join", SEND_JREQ);
@@ -491,6 +493,7 @@ void ClusterMCFA::handleMCFAControl(ClusterMCFAPkt *m) {
         break;
     case MCFA_ASFREP: {
         debugEV << "Recebi um ASFREP de " << m->getSrcAddr() << endl;
+
         MobInfo *mi = new MobInfo();
         mi->direction = m->getDirection();
         mi->speed = m->getSpeed();
@@ -503,6 +506,7 @@ void ClusterMCFA::handleMCFAControl(ClusterMCFAPkt *m) {
         char buf[20];
         sprintf(buf, "MyAddr: %i\nERMt: %f", getAddress(), Automata->getERMt());
         setTTString(buf);
+        //delete mi;
     }
         break;
     case MCFA_RERM: {
@@ -588,6 +592,7 @@ void ClusterMCFA::handleMCFAControl(ClusterMCFAPkt *m) {
             Automata->newEpoch(m->getSrcAddr(), mi, getMobInfo());
         }
         debugEV << "ERM novo " << Automata->getERMt() <<endl;
+        //delete mi;
 
     }
         break;
