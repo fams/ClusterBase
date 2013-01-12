@@ -319,11 +319,14 @@ void ClusterMCFA::handleSelfMsg(cMessage *msg) {
         pkt->setOriginId(myAddress);
         sendBroadcast(pkt);
         //Limpando AS
-        Automata->clearAS();
-        //Agenda Mudanca de estado
-        debugEV << "Agendando Definicao Join para : " << simTime()+asfreqTime << endl;
+        cancelEvent(reinitTimer);
         cancelAndDelete(delayTimer);
         cancelEvent(pollingTimer);
+        Automata->clearAS();
+        debugEV << "ClearAS" << endl;
+        //Agenda Mudanca de estado
+        debugEV << "Agendando Definicao Join para : " << simTime()+asfreqTime << endl;
+
         delayTimer = new cMessage("delay-timer", RESOLV_JOIN);
         clusterNodeState = JOIN;
         scheduleAt(simTime() + asfreqTime, delayTimer);
@@ -356,7 +359,8 @@ void ClusterMCFA::handleSelfMsg(cMessage *msg) {
         sendBroadcast(pkt);
         //Limpando AS
         Automata->clearAS();
-        //Agenda Mudanca de estado
+        debugEV << "ClearAS" <<endl;
+         //Agenda Mudanca de estado
         debugEV << "Agendando Formacao em :" << asfreqTime << endl;
         cancelAndDelete(delayTimer);
         delayTimer = new cMessage("delay-timer", GET_RERM);
@@ -441,7 +445,7 @@ void ClusterMCFA::handleNetlayerMsg(cMessage *msg) {
         handleMCFAControl(m);
         EV << "Publishing Handle MEssage" << endl;
         //Contabilizando pacotes enviados
-        emit(rxMessageSignal, 1);
+        //emit(rxMessageSignal, 1);
         delete msg;
         msg = 0;
 
@@ -610,8 +614,10 @@ int ClusterMCFA::MCF() {
         ch = Automata->randNeigh();
         //Selected CH is me, set w as my ERM and go to stage 2
         if(ch < 0){
-            debugEV << "Recebi um vizinho vazio! " << endl;
-            exit(1);
+            debugEV << "Recebi um vizinho vazio! " << ch << endl;
+            exit(ch);
+            double ret = Automata->addAction(myAddress, getMobInfo(), getMobInfo());
+            ch = myAddress;
         }
 
         if (ch == myAddress) {

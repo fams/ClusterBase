@@ -60,12 +60,14 @@ void ClusterNetNetl::handleLowerMsg(cMessage* msg)
     coreEV << " handling packet from " << m->getSrcAddr() << std::endl;
     //
     ClusterPkt *Cluster_m = static_cast<ClusterPkt*>(m->decapsulate());
+    //delete m;
     if(Cluster_m->getKind() < LAST_BASE_CLUSTER_MESSAGE_KIND){
         cMessage *msg = Cluster_m->decapsulate();
         setUpControlInfo(msg, m->getSrcAddr());
         sendUp(msg);
     }
     sendClusterManager(Cluster_m);
+    delete m;
   //  ClusterPkt *m = Cluster_m->decapsulate();
 
     // delete the netw packet

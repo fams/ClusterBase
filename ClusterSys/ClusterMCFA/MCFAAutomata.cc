@@ -27,10 +27,10 @@ MCFAAutomata::~MCFAAutomata() {
 }
 
 void MCFAAutomata::clearAS(){
-	for( std::map<int, ActionSetData>::iterator it = ActionSetProperties.begin(); it != ActionSetProperties.end(); it++){
+	/*for( std::map<int, ActionSetData>::iterator it = ActionSetProperties.begin(); it != ActionSetProperties.end(); it++){
 		ActionSetData asd = (*it).second;
 		delete asd.Mobility;
-	}
+	}*/
 	ActionSetProperties.clear();
 	ActionSet.clear();
 }
@@ -162,15 +162,14 @@ int MCFAAutomata::randNeigh(){
 
        r = r*prob;
        double position=0;
-       if(ActionSet.size()==1)
-           return ActionSet[0];
+       if(ActionSet.size()<1)
+           return -1;
        for(i=0;i<ActionSet.size();i++){
            position += ActionSetProperties[ActionSet[i]].Probability;
            if(r <= position)
                return ActionSet[i];
        }
-       return -1;
-
+       return (-2 - i);
 }
 
 int MCFAAutomata::getNeigh(int node){
@@ -188,7 +187,7 @@ int MCFAAutomata::removeAction(int node){
     //Guarda a sua chance de escolha
     double nodeP = ActionSetProperties[node].Probability;
     //apaga as propriedades
-    delete ActionSetProperties[node].Mobility;
+    //delete ActionSetProperties[node].Mobility;
     std::map<int, ActionSetData>::iterator it;
     it = ActionSetProperties.find(node);
     ActionSetProperties.erase(it);
