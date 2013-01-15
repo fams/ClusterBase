@@ -274,7 +274,6 @@ void ClusterLowestID::handleNetlayerMsg(cMessage *msg)
 			m = static_cast<ClusterLowestIdPkt *> (msg);
 
 			//Contabilizando pacotes enviados
-			emit(rxMessageSignal,1);
 			handleClusterMessage(m);
 			delete msg;
 			msg = 0;

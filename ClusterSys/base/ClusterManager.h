@@ -71,12 +71,13 @@ protected:
     /** @brief Reset message to schedule Reset */
     cMessage *resetTimer;
 
+
+
+private:
     /** Statistics */
     //simsignal_t changeTypeSignal;
     simsignal_t rxMessageSignal;
     simsignal_t txMessageSignal;
-
-private:
     /*@brief Child List, aponta para os filhotes */
     std::map<LAddress::L3Type, NodeEntry> ChildList;
 

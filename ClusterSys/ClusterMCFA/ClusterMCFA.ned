@@ -27,8 +27,6 @@ simple ClusterMCFA extends ClusterManager
          //@signal[changeType](type="int");
         //@signal[rxMsg](type="int");
         //@statistic[nodeType](title="NodeType"; source="changeType"; record=vector,stats; interpolationmode=none);
-        @statistic[rxMessageSignal](title="Rx Msg"; source="rxMsg"; record=vector,stats; interpolationmode=none);
-        @statistic[txMessageSignal](title="Rx Msg"; source="rxMsg"; record=vector,stats; interpolationmode=none);
         double packetTime @unit(s); // the time a packet needs to be transmitted
         int headerLength @unit(bit);
         double packetsPerPacketTime; // the packets to generate per packet time (regulates traffic)

@@ -23,6 +23,8 @@ simple ClusterManager like IClusterManager
     parameters:
         @display("i=block/circle");
         int timeout = default(20);
+        @statistic[rxMessageSignal](title="Rx Msg"; source="rxMsg"; record=vector,stats; interpolationmode=none);
+        @statistic[txMessageSignal](title="Rx Msg"; source="rxMsg"; record=vector,stats; interpolationmode=none);
     gates:
         input NetNetlIn;
         output NetNetlOut;

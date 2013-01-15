@@ -169,7 +169,8 @@ int MCFAAutomata::randNeigh(){
            if(r <= position)
                return ActionSet[i];
        }
-       return (-2 - i);
+       return ActionSet[i-1];
+       //return (-2 - i);
 }
 
 int MCFAAutomata::getNeigh(int node){

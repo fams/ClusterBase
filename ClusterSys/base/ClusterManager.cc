@@ -207,6 +207,9 @@ void ClusterManager::handlePingMsg(ClusterPkt *msg) {
 
 void ClusterManager::handleNetlayerMsg(cMessage *msg)
 {
+    //Contabilizando Pacotes Recebidos
+    emit(rxMessageSignal,1);
+
     switch (msg->getKind()) {
     case CLUSTER_BASE_PING:
         ClusterPkt *m;
@@ -387,7 +390,7 @@ void ClusterManager::sendBroadcast(ClusterPkt* pkt)
 
     debugEV << "Sending broadcast packet!!\n";
     //Contabilizando pacotes enviados
-   // emit(txMessageSignal,1);
+    emit(txMessageSignal,1);
     sendNetLayer( pkt );
 }
 void ClusterManager::sendDirectMessage(ApplPkt* pkt, LAddress::L3Type destAddr){

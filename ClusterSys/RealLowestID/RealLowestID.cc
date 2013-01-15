@@ -279,9 +279,6 @@ void RealLowestID::handleNetlayerMsg(cMessage *msg)
 		case CLUSTER_FORMATION_PACKET:
 			RealLowestIDPkt *m;
 			m = static_cast<RealLowestIDPkt *> (msg);
-
-			//Contabilizando pacotes enviados
-			emit(rxMessageSignal,1);
 			handleClusterMessage(m);
 			delete msg;
 			msg = 0;
