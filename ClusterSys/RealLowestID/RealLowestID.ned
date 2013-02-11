@@ -40,24 +40,24 @@ simple RealLowestID extends ClusterManager
         
         //Caracteristicas do LowestID
         //@brief Tempo de eleição
-        int electionTime = default(5);
+        int electionTime = default(10);
         //@brief Tempo procurando Hosts
         int headJoinTime = default(200); //the time node will stay on HeadJoin state
         //@brief Tempo procurando Vizinhos
         int neighInqTime = default(500); //the time node will stay on HeadJoin state
         //@brief Intervalo entre pings
         int pollingTime = default(100);
+        //Tentativas de retransmissao
+        int retransmissionTime = default(2);
         //@brief Timeout para RESET
         int resetTime = default(999);
-        //Tentativas de retransmissao
-        int retransmissionTime = default(10);
+        
+        int publishTime = default(3);
         //@brief tamanho do cabecalho
         int headerLength @unit(bit);
-        //@brief Tentativas de join antes de desistir
-        int joinAttempts = default(2);
         //@percentagem de filhotes perdidos antes de declarar o Cluster Morto
         double childLostPercentage = default(0.5);
-        @class(ClusterLowestID);
+        @class(RealLowestID);
     gates:
 
 }

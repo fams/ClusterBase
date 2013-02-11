@@ -60,7 +60,7 @@ public:
 	     *
 	     */
 		/** @brief Schedules sending init Cluster.*/
-		SEND_HEAD_INIT = LAST_BASE_CLUSTER_MESSAGE_KIND,
+		DEFINE_HEAD = LAST_BASE_CLUSTER_MESSAGE_KIND,
 
 		/** @brief Schedules sending Neighborhood Inquire*/
 		SEND_NEIGH_INQ,
@@ -78,6 +78,8 @@ public:
 		POLLING,
 
 		SEND_MYID,
+
+		SEND_HEAD_INIT,
 
 		//Inter Clusters
         /** @brief Cluster Init */
@@ -105,6 +107,8 @@ protected:
 	/** @brief Time to stay in HEAD_NEIGH state..*/
 	double neighInqTime;
 
+	double publishTime;
+
 	/** @brief SHortcut to blackboards Packet category.*/
 	int catPacket;
 
@@ -116,6 +120,8 @@ protected:
 
 	/** @brief Timer message to schedule next packet send.*/
 	cMessage *delayTimer;
+
+	cMessage *publishTimer;
 
 
 	/** @brief Pointer to world utility module.*/
@@ -133,6 +139,8 @@ protected:
     NodeList childs;
 
     NodeList childs_pre;
+
+    NodeList head_candidate;
 
 
 	/** @brief percentage of childs lost accepted */
@@ -189,10 +197,19 @@ protected:
 	/** @brief Trata mensagens vindas da netlayer */
 	virtual void handleNetlayerMsg(cMessage*);
 
-	/** @brief preenche o pacote */
-	virtual void setPktValues(ClusterPkt *, int , int  , int  );
 
 	int isHeadValid(int TotalChilds, int ActiveChilds);
+
+	//Metodos de selecao de candidato
+	void addCandidate(int);
+
+	void removeCandidate(int);
+
+	void  flushCandidates();
+
+	int  getElected();
+
+
 
 };
 
