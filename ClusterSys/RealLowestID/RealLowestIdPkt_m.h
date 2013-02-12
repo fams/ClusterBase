@@ -51,7 +51,7 @@ enum ClusterLowestIdMessageTypes {
  * 	int msgtype enum(ClusterLowestIdMessageTypes);
  * 	int headId;
  * 	int originId;
- * 	string listingNodes;
+ * 	string listeningNodes;
  * 	
  * };
  * </pre>
@@ -62,7 +62,7 @@ class RealLowestIDPkt : public ::ClusterPkt
     int msgtype_var;
     int headId_var;
     int originId_var;
-    opp_string listingNodes_var;
+    opp_string listeningNodes_var;
 
   private:
     void copy(const RealLowestIDPkt& other);
@@ -87,8 +87,8 @@ class RealLowestIDPkt : public ::ClusterPkt
     virtual void setHeadId(int headId);
     virtual int getOriginId() const;
     virtual void setOriginId(int originId);
-    virtual const char * getListingNodes() const;
-    virtual void setListingNodes(const char * listingNodes);
+    virtual const char * getListeningNodes() const;
+    virtual void setListeningNodes(const char * listeningNodes);
 };
 
 inline void doPacking(cCommBuffer *b, RealLowestIDPkt& obj) {obj.parsimPack(b);}

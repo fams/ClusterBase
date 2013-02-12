@@ -40,6 +40,8 @@ class ClusterManager: public BaseModule {
 public:
     //@brief SignalID para Estatisticas dos nodes
     static const simsignalwrap_t catClusterNodeStatsSignal;
+    simsignal_t rxMessageSignal;
+    simsignal_t txMessageSignal;
     enum ClusterMessageTypes {
         CLUSTER_DATA_PACKET = 13001,
         CLUSTER_CONTROL_BLOCK,
@@ -76,8 +78,6 @@ protected:
 private:
     /** Statistics */
     //simsignal_t changeTypeSignal;
-    simsignal_t rxMessageSignal;
-    simsignal_t txMessageSignal;
     /*@brief Child List, aponta para os filhotes */
     std::map<LAddress::L3Type, NodeEntry> ChildList;
 

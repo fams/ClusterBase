@@ -34,6 +34,6 @@ packet RealLowestIDPkt extends ClusterPkt {
 	int msgtype enum(ClusterLowestIdMessageTypes);
 	int headId;
 	int originId;
-	string listingNodes;
+	string listeningNodes;
 	
 };

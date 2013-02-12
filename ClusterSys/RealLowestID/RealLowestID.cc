@@ -98,6 +98,8 @@ RealLowestID::~RealLowestID() {
 		cancelAndDelete(delayTimer);
 	if(pollingTimer)
 		cancelAndDelete(pollingTimer);
+	if(resetTimer)
+	    cancelAndDelete(resetTimer);
 }
 
 void RealLowestID::finish()
@@ -168,7 +170,12 @@ void RealLowestID::handleSelfMsg(cMessage *msg)
 	case DEFINE_HEAD:{
 
         //vou tentar associar a esse head
-        int hc = getElected();
+	    int hc = getElected();
+	    if (hc == head_candidate){
+	        removeCandidate(hc);
+	        head_candidate = hc = getElected();
+
+	    }
         if (hc == myAddress){
             debugEV << "Tornando-me HEAD:" << myAddress << endl;
 
@@ -262,6 +269,7 @@ void RealLowestID::handleNetlayerMsg(cMessage *msg)
 {
 
     ClusterManager::handleNetlayerMsg(msg);
+    debugEV << "recebi " <<endl;
 	switch (msg->getKind()) {
 		case CLUSTER_FORMATION_PACKET:
 			RealLowestIDPkt *m;
@@ -319,7 +327,11 @@ void RealLowestID::handleClusterMessage(RealLowestIDPkt* m){
 	 *********************/
 	case CLUSTER_INFO:{
 	    debugEV << "Received node ID\n";
-	    addCandidate( m->getSrcAddr());
+	    std::stringstream ss;
+	    std::string buf;
+	    ss << m->getListeningNodes();
+	    ss >> buf;
+	    addCandidate( m->getSrcAddr(),buf);
 	}
 	break;
 	/*********************
@@ -330,14 +342,14 @@ void RealLowestID::handleClusterMessage(RealLowestIDPkt* m){
 			debugEV << "Becaming child of " << m->getSrcAddr() << endl;
 			clusterNodeState = CHILD_MESSAGE;
 			setCurrentRole(CHILD_NODE);
-			cancelEvent(publishTimer);
+			//cancelEvent(publishTimer);
 
 			char tt[20];
 			sprintf(tt, "Head of: %i" , m->getSrcAddr());
 			setTTString(tt);
 			setHeadAddress( m->getSrcAddr());
 			updateSeen();
-			cancelEvent(publishTimer);
+			//cancelEvent(publishTimer);
 			cancelEvent(delayTimer);
 		}else{
 			debugEV << "received CLUSTER_ACCEPTED but not in CHILD_JOIN actual state: " << clusterNodeState << endl;
@@ -434,24 +446,45 @@ void RealLowestID::sendMyID(){
     sendBroadcast(pkt);
 }
 
-void RealLowestID::addCandidate(int c) {
-    head_candidate.push_back(c);
-    head_candidate.sort();
-    head_candidate.reverse();
-    head_candidate.unique();
+std::vector<Neighbor>::iterator RealLowestID::findCandidate(int c){
+    return std::find(listenList.begin(), listenList.end(), Neighbor(c,0,"")) ;
+}
+std::vector<Neighbor>::iterator RealLowestID::findCandidate(Neighbor c){
+    return std::find(listenList.begin(), listenList.end(), c) ;
+}
+
+void RealLowestID::addCandidate(int c, std::string nl) {
+    std::vector<Neighbor>::iterator it = findCandidate(c);
+    if(it!=listenList.end()){
+        it->setlastseen(simTime().dbl());
+        it->setneighlist(nl);
+    }else{
+        listenList.push_back(Neighbor(c, simTime().dbl(), ""));
+        std::sort(listenList.begin(),listenList.end(),Neighbor::cmp_neigh);
+        std::reverse(listenList.begin(),listenList.end());
+    }
+
 }
 
 void RealLowestID::removeCandidate(int c){
-    head_candidate.remove(c);
+    std::vector<Neighbor>::iterator nc = findCandidate(c);
+    if(nc != listenList.end())
+        listenList.erase(nc);
+}
+void RealLowestID::removeCandidate(Neighbor c){
+    std::vector<Neighbor>::iterator nc = findCandidate(c);
+    if(nc != listenList.end())
+        listenList.erase(nc);
 }
 
 void RealLowestID::flushCandidates(){
-    head_candidate.clear();
+    listenList.clear();
 }
 
 int RealLowestID::getElected(){
-    head_candidate.sort();
-    int hc = head_candidate.back();
-    removeCandidate(hc);
-    return hc;
+    std::sort(listenList.begin(),listenList.end(),Neighbor::cmp_neigh);
+    std::reverse(listenList.begin(),listenList.end());
+    Neighbor hc = listenList.back();
+    //removeCandidate(hc);
+    return hc.getNode();
 }

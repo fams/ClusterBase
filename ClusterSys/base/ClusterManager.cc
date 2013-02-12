@@ -408,7 +408,7 @@ void ClusterManager::sendDirectMessage(ApplPkt* pkt, LAddress::L3Type destAddr){
     debugEV << "Mensage direta" <<endl;
     debugEV << "Enviando Mensagem direta para " << destAddr << "!!" << endl;
     //Contabilizando pacotes enviados
-   // emit(txMessageSignal,1);
+    emit(txMessageSignal,1);
     sendNetLayer( pkt );
     debugEV << "Enviei agora" <<endl;
 }

@@ -49,7 +49,7 @@ RealLowestIDPkt::RealLowestIDPkt(const char *name, int kind) : ClusterPkt(name,k
     this->msgtype_var = 0;
     this->headId_var = 0;
     this->originId_var = 0;
-    this->listingNodes_var = 0;
+    this->listeningNodes_var = 0;
 }
 
 RealLowestIDPkt::RealLowestIDPkt(const RealLowestIDPkt& other) : ClusterPkt(other)
@@ -74,7 +74,7 @@ void RealLowestIDPkt::copy(const RealLowestIDPkt& other)
     this->msgtype_var = other.msgtype_var;
     this->headId_var = other.headId_var;
     this->originId_var = other.originId_var;
-    this->listingNodes_var = other.listingNodes_var;
+    this->listeningNodes_var = other.listeningNodes_var;
 }
 
 void RealLowestIDPkt::parsimPack(cCommBuffer *b)
@@ -83,7 +83,7 @@ void RealLowestIDPkt::parsimPack(cCommBuffer *b)
     doPacking(b,this->msgtype_var);
     doPacking(b,this->headId_var);
     doPacking(b,this->originId_var);
-    doPacking(b,this->listingNodes_var);
+    doPacking(b,this->listeningNodes_var);
 }
 
 void RealLowestIDPkt::parsimUnpack(cCommBuffer *b)
@@ -92,7 +92,7 @@ void RealLowestIDPkt::parsimUnpack(cCommBuffer *b)
     doUnpacking(b,this->msgtype_var);
     doUnpacking(b,this->headId_var);
     doUnpacking(b,this->originId_var);
-    doUnpacking(b,this->listingNodes_var);
+    doUnpacking(b,this->listeningNodes_var);
 }
 
 int RealLowestIDPkt::getMsgtype() const
@@ -125,14 +125,14 @@ void RealLowestIDPkt::setOriginId(int originId)
     this->originId_var = originId;
 }
 
-const char * RealLowestIDPkt::getListingNodes() const
+const char * RealLowestIDPkt::getListeningNodes() const
 {
-    return listingNodes_var.c_str();
+    return listeningNodes_var.c_str();
 }
 
-void RealLowestIDPkt::setListingNodes(const char * listingNodes)
+void RealLowestIDPkt::setListeningNodes(const char * listeningNodes)
 {
-    this->listingNodes_var = listingNodes;
+    this->listeningNodes_var = listeningNodes;
 }
 
 class RealLowestIDPktDescriptor : public cClassDescriptor
@@ -214,7 +214,7 @@ const char *RealLowestIDPktDescriptor::getFieldName(void *object, int field) con
         "msgtype",
         "headId",
         "originId",
-        "listingNodes",
+        "listeningNodes",
     };
     return (field>=0 && field<4) ? fieldNames[field] : NULL;
 }
@@ -226,7 +226,7 @@ int RealLowestIDPktDescriptor::findField(void *object, const char *fieldName) co
     if (fieldName[0]=='m' && strcmp(fieldName, "msgtype")==0) return base+0;
     if (fieldName[0]=='h' && strcmp(fieldName, "headId")==0) return base+1;
     if (fieldName[0]=='o' && strcmp(fieldName, "originId")==0) return base+2;
-    if (fieldName[0]=='l' && strcmp(fieldName, "listingNodes")==0) return base+3;
+    if (fieldName[0]=='l' && strcmp(fieldName, "listeningNodes")==0) return base+3;
     return basedesc ? basedesc->findField(object, fieldName) : -1;
 }
 
@@ -290,7 +290,7 @@ std::string RealLowestIDPktDescriptor::getFieldAsString(void *object, int field,
         case 0: return long2string(pp->getMsgtype());
         case 1: return long2string(pp->getHeadId());
         case 2: return long2string(pp->getOriginId());
-        case 3: return oppstring2string(pp->getListingNodes());
+        case 3: return oppstring2string(pp->getListeningNodes());
         default: return "";
     }
 }
@@ -308,7 +308,7 @@ bool RealLowestIDPktDescriptor::setFieldAsString(void *object, int field, int i,
         case 0: pp->setMsgtype(string2long(value)); return true;
         case 1: pp->setHeadId(string2long(value)); return true;
         case 2: pp->setOriginId(string2long(value)); return true;
-        case 3: pp->setListingNodes((value)); return true;
+        case 3: pp->setListeningNodes((value)); return true;
         default: return false;
     }
 }

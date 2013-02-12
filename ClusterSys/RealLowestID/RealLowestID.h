@@ -17,6 +17,10 @@
 #define ClusterApplLayer_H_
 
 #include <vector>
+#include <String>
+#include <algorithm>
+#include <sstream>
+
 #include "BaseApplLayer.h"
 #include "NetwControlInfo.h"
 #include <omnetpp.h>
@@ -26,8 +30,45 @@
 #include "ClusterPkt_m.h"
 
 
+
 typedef struct { int gw ; int head; } RouteEntry;
 
+class Neighbor{
+private:
+    int node;
+    double lastseen;
+    std::string neighlist;
+public:
+    Neighbor(int n, double l, std::string s): node(n),lastseen(l),neighlist(s) {};
+public:
+    void setlastseen(double l){
+        lastseen = l;
+    };
+    void setneighlist(std::string s){
+        neighlist = s;
+    };
+    static bool cmp_neigh(const Neighbor a, const Neighbor b){
+        return (a.node < b.node);
+    }
+    static bool same(const Neighbor a, const Neighbor b){
+        return (a.node == b.node );
+    }
+    bool operator==(const Neighbor &other){
+        return (node == other.node);
+    }
+    bool operator!=( const Neighbor &other) {
+        return !(*this == other);
+    }
+    int getNode(){
+        return node;
+    }
+    double getLastseen(){
+        return lastseen;
+    }
+
+};
+
+typedef std::vector<Neighbor> NeighList;
 typedef std::list<int> NodeList;
 typedef std::vector<RouteEntry> RouteList;
 
@@ -140,7 +181,9 @@ protected:
 
     NodeList childs_pre;
 
-    NodeList head_candidate;
+    NeighList listenList;
+
+    int head_candidate;
 
 
 	/** @brief percentage of childs lost accepted */
@@ -201,13 +244,20 @@ protected:
 	int isHeadValid(int TotalChilds, int ActiveChilds);
 
 	//Metodos de selecao de candidato
-	void addCandidate(int);
+	void addCandidate(int, std::string );
 
 	void removeCandidate(int);
+
+    void removeCandidate(Neighbor);
 
 	void  flushCandidates();
 
 	int  getElected();
+
+	std::vector<Neighbor>::iterator findCandidate(int);
+    std::vector<Neighbor>::iterator findCandidate(Neighbor);
+
+
 
 
 
