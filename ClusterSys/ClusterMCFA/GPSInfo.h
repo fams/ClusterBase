@@ -23,7 +23,11 @@ public:
 		//Calculando Velocidade
 		double distance = newCoor->distance(&currCoor);
 		currSpeed = distance/(simTime() - lastPosTime);
-		currDirection = atan((newCoor->y - lastCoor.y)/(newCoor->x - lastCoor.x));
+		if ((newCoor->y == lastCoor.y) && (newCoor->x == lastCoor.x)){
+		   currDirection =0;
+		}else{
+		    currDirection = atan((newCoor->y - lastCoor.y)/(newCoor->x - lastCoor.x));
+		}
 		lastCoor  = *newCoor; 
 		currCoor  = *newCoor;
 		lastPosTime = simTime();
