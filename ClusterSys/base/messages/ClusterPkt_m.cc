@@ -35,6 +35,8 @@ EXECUTE_ON_STARTUP(
     if (!e) enums.getInstance()->add(e = new cEnum("ClusterPktMessageTypes"));
     e->insert(CLUSTER_PING, "CLUSTER_PING");
     e->insert(CLUSTER_PONG, "CLUSTER_PONG");
+    e->insert(CLUSTER_FORCE_LEAVE, "CLUSTER_FORCE_LEAVE");
+    e->insert(CLUSTER_NOTIFY_LEAVE, "CLUSTER_NOTIFY_LEAVE");
 );
 
 Register_Class(ClusterPkt);

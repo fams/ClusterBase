@@ -25,13 +25,17 @@
  * enum ClusterPktMessageTypes 
  * {
  *         CLUSTER_PING 		= 10060;
- *     	CLUSTER_PONG 		= 10070; 
+ *     	CLUSTER_PONG 		= 10070;
+ *     	CLUSTER_FORCE_LEAVE = 10080;
+ *     	CLUSTER_NOTIFY_LEAVE = 10090;
  * }
  * </pre>
  */
 enum ClusterPktMessageTypes {
     CLUSTER_PING = 10060,
-    CLUSTER_PONG = 10070
+    CLUSTER_PONG = 10070,
+    CLUSTER_FORCE_LEAVE = 10080,
+    CLUSTER_NOTIFY_LEAVE = 10090
 };
 
 /**

@@ -41,7 +41,7 @@ void RealLowestID::initialize(int stage)
 		//Messages
 		delayTimer 		= new cMessage("LID-Timer", DEFINE_HEAD);
 
-		resetTimer 		= new cMessage("reset-timer", DO_RESET);
+
 
 		pollingTimer	= new cMessage("polling-timer", POLLING);
 
@@ -75,8 +75,10 @@ void RealLowestID::initialize(int stage)
     Emitir sinal para contabilizar o node UNDEFINED
 */
 		joinAttempts_cur = 0;
+		head_candidate = -1;
 		pollAttempt = 0;
 
+		createReset(DO_RESET);
 
 
 	} else if (stage == 1) {
@@ -86,6 +88,7 @@ void RealLowestID::initialize(int stage)
 		cancelEvent(delayTimer);
 		scheduleAt( schedtime , delayTimer);
 		scheduleAt(simTime() + (dblrand() *2 ), publishTimer);
+		addCandidate(myAddress,"");
 		debugEV << "Agendando eleicao para" << schedtime <<endl;
 
 	} else {
@@ -115,30 +118,76 @@ int RealLowestID::isHeadValid(int TotalChilds, int ActiveChilds){
     return (ActiveChilds > (childLostPercentage * TotalChilds));
 }
 
+void RealLowestID::migrate(int hc){
+    if(getCurrentRole() == CHILD_NODE){
+        Neighbor n = *(findCandidate(hc));
+        //Se o candidato n‹o eh um head nao migra
+        if(n.isChild())
+            return;
+        //Se o head atual eh o menor nao migra
+        if(getHeadAddress() <= hc)
+            return;
+        NotifyLeave();
+        //Reseting all
+        debugEV << "Migrando..." << endl;
+
+        setCurrentRole(UNDEFINED_NODE);
+
+        findHost()->bubble("Migrando");
+
+        //Display String
+        char* tt = new char(20);
+        sprintf(tt, "MyAddr is %i" , myAddress);
+        setTTString(tt);
+
+        //Tenta o Rejoin
+        debugEV << "Tentando me afiliar a outro head." << endl;
+        clusterNodeState = CHILD_JOIN;
+        debugEV << "Node: " <<myAddress << " tentando se afiliar ao no " << hc << endl;
+
+        //Envia Mensagem de Join para o HEAD
+        RealLowestIDPkt *pkt = new RealLowestIDPkt("DIRECT: CLUSTER_JOIN", CLUSTER_FORMATION_PACKET);
+        setPktValues(pkt,CLUSTER_JOIN, hc, myAddress);
+        sendDirectMessage(pkt, hc);
+
+        //Agendando Eleicao
+        delayTimer = new cMessage("LID-timer", DEFINE_HEAD);
+        cancelEvent(delayTimer);
+        double schedtime = simTime().dbl() + electionTime;
+        debugEV << "Agendando eleicao para " << schedtime <<endl;
+        scheduleAt( schedtime , delayTimer);
+    }
+}
 void RealLowestID::handleReset(cMessage *msg){
 	//Reseting all
-	debugEV << "Reseting  " << endl;
+	debugEV << "LIC Reseting  " << endl;
 
 	setCurrentRole(UNDEFINED_NODE);
 
 	/** Init Node State */
 	clusterNodeState = INITIALIZING;
 
-	bubble("Reseting");
+	findHost()->bubble("Reseting");
 
 	//Display String
 	char* tt = new char(20);
 	sprintf(tt, "MyAddr is %i" , myAddress);
 	setTTString(tt);
-
+/*
 	//Tenta o Rejoin
-	RealLowestIDPkt *pkt = new RealLowestIDPkt("BROADCAST: CLUSTER_REJOIN", CLUSTER_FORMATION_PACKET);
-	setPktValues(pkt , CLUSTER_REJOIN, myAddress, myAddress);
+	debugEV << "Tentando me afiliar a outro head." << endl;
+	clusterNodeState = CHILD_JOIN;
+	RealLowestIDPkt *pkt = new RealLowestIDPkt("BROADCAST: CLUSTER_JOIN", CLUSTER_FORMATION_PACKET);
+	setPktValues(pkt , CLUSTER_JOIN, myAddress, myAddress);
 	sendBroadcast(pkt);
+*/
+	//Agendando Eleicao
 
 	delayTimer = new cMessage("LID-timer", DEFINE_HEAD);
     cancelEvent(delayTimer);
-	scheduleAt( simTime() + dblrand() * myAddress , delayTimer);
+    double schedtime = simTime().dbl() + electionTime;
+    debugEV << "Agendando eleicao para " << schedtime <<endl;
+	scheduleAt( schedtime , delayTimer);
 }
 
 /*
@@ -158,6 +207,9 @@ void RealLowestID::handleSelfMsg(cMessage *msg)
 	break;
 	case POLLING:{
 		handlePolling(msg);
+        debugEV << "Reagendando polling para " << simTime().dbl() + pollingTime << endl;
+        cancelEvent(pollingTimer);
+        scheduleAt( simTime() + pollingTime , pollingTimer);
 		}
 	break;
 
@@ -169,18 +221,30 @@ void RealLowestID::handleSelfMsg(cMessage *msg)
 /* HEAD */
 	case DEFINE_HEAD:{
 
-        //vou tentar associar a esse head
-	    int hc = getElected();
-	    if (hc == head_candidate){
-	        removeCandidate(hc);
-	        head_candidate = hc = getElected();
+        //vou tentar associar a esse head'
 
+	    int hc = getElected();
+	    //Se eh a primeira tentativa limpa o contador
+	    if (hc != head_candidate){
+	        joinAttempts_cur = 0;
+	    }else{
+	        if(joinAttempts_cur < 2){
+	            debugEV << "Tentativa " << joinAttempts_cur << endl;
+	        }else{
+	            debugEV << "Tentativa " << joinAttempts_cur << ". removendo " << hc << endl;
+	            joinAttempts_cur = 0;
+	            removeCandidate(hc);
+	            hc = getElected();
+	        }
 	    }
+	    head_candidate = hc;
+	    debugEV << "Meu endereco e " << myAddress << " o eleito foi " << hc << endl;
         if (hc == myAddress){
+            joinAttempts_cur = 0;
             debugEV << "Tornando-me HEAD:" << myAddress << endl;
 
             char tt[50];
-            sprintf(tt, "HEAD, MyID:  %i\n HEAD_JOIN" , myAddress);
+            sprintf(tt, "I'M HEAD, MyID: %i\n" , myAddress);
             setTTString(tt);
 
 
@@ -201,7 +265,7 @@ void RealLowestID::handleSelfMsg(cMessage *msg)
         }else{
             debugEV << "Tentando associar a um HEAD" <<endl;
             clusterNodeState = CHILD_JOIN;
-            debugEV << "Node: " <<myAddress << " tring to becoming child of " << hc << endl;
+            debugEV << "Node: " <<myAddress << " tentando se afiliar ao no " << hc << endl;
 
             //Envia Mensagem de Join para o HEAD
             RealLowestIDPkt *pkt = new RealLowestIDPkt("DIRECT: CLUSTER_JOIN", CLUSTER_FORMATION_PACKET);
@@ -209,8 +273,9 @@ void RealLowestID::handleSelfMsg(cMessage *msg)
             sendDirectMessage(pkt, hc);
 
             char tt[50];
-            sprintf(tt, "Tentando associar a Head %i \n" ,  hc );
+            sprintf(tt, "Tentando associar a Head %i" ,  hc );
             setTTString(tt);
+            joinAttempts_cur++;
 
             //Agenda nova tentativa
             debugEV << "Msg Type>  " << delayTimer->getKind() <<endl;
@@ -225,7 +290,7 @@ void RealLowestID::handleSelfMsg(cMessage *msg)
 		clusterNodeState = HEAD_NEIGH;
 
 		char tt[50];
-		sprintf(tt, "HEAD, MyID:  %i\n HEAD_NEIGH" , myAddress);
+		sprintf(tt, "HEAD, MyID:  %i - HEAD_NEIGH" , myAddress);
 		setTTString(tt);
 		RealLowestIDPkt *pkt;
 		for (std::list<int>::iterator it = childs.begin(); it!=childs.end(); ++it) {
@@ -269,7 +334,6 @@ void RealLowestID::handleNetlayerMsg(cMessage *msg)
 {
 
     ClusterManager::handleNetlayerMsg(msg);
-    debugEV << "recebi " <<endl;
 	switch (msg->getKind()) {
 		case CLUSTER_FORMATION_PACKET:
 			RealLowestIDPkt *m;
@@ -296,32 +360,19 @@ void RealLowestID::handleClusterMessage(RealLowestIDPkt* m){
 	 *  HEAD Messages
 	 *********************/
 	case CLUSTER_JOIN:{
-	        //Recebi um Cluster Join
-	        debugEV << "Received CLUSTER_JOIN from:" << m->getSrcAddr() << endl;
-	        if(getCurrentRole() != CHILD_NODE){
-	                setCurrentRole(HEAD_NODE);
-	                if(msgType== CLUSTER_JOIN){
-	                    //Adicionando na lista de filhotes
-	                    addChild(m->getSrcAddr());
-	                    //Envia Mensagem de JoinAccept
-	                    RealLowestIDPkt *pkt = new RealLowestIDPkt("DIRECT: CLUSTER_ACCEPTED:", CLUSTER_FORMATION_PACKET);
-	                    setPktValues(pkt, CLUSTER_ACCEPTED, m->getSrcAddr(), myAddress);
-	                    sendDirectMessage(pkt,m->getSrcAddr());
-	                }
-	        }
-	    }
-	    break;
-
-	case CLUSTER_REJOIN:{
-		if(getCurrentRole() == HEAD_NODE){
-
-			RealLowestIDPkt *pkt = new RealLowestIDPkt("BROADCAST: CLUSTER_INIT", CLUSTER_FORMATION_PACKET);
-			setPktValues(pkt , CLUSTER_INIT, myAddress, myAddress);
-			sendDirectMessage(pkt,m->getSrcAddr());
-			//sendBroadcast(pkt);
-		}
+        //Recebi um Cluster Join
+        debugEV << "Received CLUSTER_JOIN from:" << m->getSrcAddr() << endl;
+        if(getCurrentRole() == HEAD_NODE){
+            //Adicionando na lista de filhotes
+            addChild(m->getSrcAddr());
+            //Envia Mensagem de JoinAccept
+            RealLowestIDPkt *pkt = new RealLowestIDPkt("DIRECT: CLUSTER_ACCEPTED:", CLUSTER_FORMATION_PACKET);
+            setPktValues(pkt, CLUSTER_ACCEPTED, m->getSrcAddr(), myAddress);
+            sendDirectMessage(pkt,m->getSrcAddr());
+        }
 	}
 	break;
+
 	/*********************
 	 *  UNDEFINED Messages
 	 *********************/
@@ -331,7 +382,8 @@ void RealLowestID::handleClusterMessage(RealLowestIDPkt* m){
 	    std::string buf;
 	    ss << m->getListeningNodes();
 	    ss >> buf;
-	    addCandidate( m->getSrcAddr(),buf);
+	    addCandidate( m->getSrcAddr(),m->getHeadId(),buf);
+	    migrate(m->getSrcAddr());
 	}
 	break;
 	/*********************
@@ -345,10 +397,12 @@ void RealLowestID::handleClusterMessage(RealLowestIDPkt* m){
 			//cancelEvent(publishTimer);
 
 			char tt[20];
-			sprintf(tt, "Head of: %i" , m->getSrcAddr());
+			sprintf(tt, "My HEAD: %i" , m->getSrcAddr());
 			setTTString(tt);
 			setHeadAddress( m->getSrcAddr());
 			updateSeen();
+            cancelEvent(pollingTimer);
+            scheduleAt( simTime() + pollingTime , pollingTimer);
 			//cancelEvent(publishTimer);
 			cancelEvent(delayTimer);
 		}else{
@@ -403,34 +457,6 @@ void RealLowestID::handleClusterMessage(RealLowestIDPkt* m){
 		break;
 		}
 	break;
-	/* Nao vou mais usar  */
-	case CLUSTER_PING:{
-		debugEV << "Recebi um PING! de " << m->getSrcAddr() << " Meu headAddress eh: " << getHeadAddress() << endl;
-		if(m->getHeadId() == getHeadAddress()) {
-			if(getCurrentRole() == HEAD_NODE ){
-				RealLowestIDPkt *pkt = new RealLowestIDPkt("DIRECT: HEAD PONG", CLUSTER_FORMATION_PACKET);
-				setPktValues(pkt,CLUSTER_PONG, getHeadAddress(), myAddress);
-				sendDirectMessage(pkt,m->getSrcAddr());
-			}else if(getCurrentRole() == CHILD_NODE){
-				pong=1;
-				RealLowestIDPkt *pkt = new RealLowestIDPkt("DIRECT: CHILD PONG", CLUSTER_FORMATION_PACKET);
-				setPktValues(pkt,CLUSTER_PONG, getHeadAddress(), myAddress);
-				sendDirectMessage(pkt,m->getSrcAddr());
-			}
-		}
-	}
-	break;
-	case CLUSTER_PONG:{
-		debugEV << "Recebi um PONG! de " << m->getSrcAddr() << " Meu headAddress eh: " << getHeadAddress() << endl;
-		if(m->getHeadId() == getHeadAddress()) {
-			if(getCurrentRole() == HEAD_NODE ){
-				childs_pre.push_back(m->getSrcAddr());
-			}else if(getCurrentRole() == CHILD_NODE){
-				pong = 1;
-			}
-		}
-	}
-	break;
 	default:
 		EV << "MSG NOT HANDLED" << endl;
 		break;
@@ -442,7 +468,13 @@ void RealLowestID::handleClusterMessage(RealLowestIDPkt* m){
 void RealLowestID::sendMyID(){
     //Envia info de ID
     RealLowestIDPkt *pkt = new RealLowestIDPkt("BROADCAST: CLUSTER_INFO", CLUSTER_FORMATION_PACKET);
-    setPktValues(pkt , CLUSTER_INFO, myAddress, myAddress);
+    //Avisa se Ž child no sendID
+    int head = myAddress;
+    if(getCurrentRole() == CHILD_NODE)
+        head = getHeadAddress();
+
+    setPktValues(pkt , CLUSTER_INFO, head, myAddress);
+    //pkt->setl
     sendBroadcast(pkt);
 }
 
@@ -465,6 +497,20 @@ void RealLowestID::addCandidate(int c, std::string nl) {
     }
 
 }
+void RealLowestID::addCandidate(int c, int h, std::string nl) {
+    std::vector<Neighbor>::iterator it = findCandidate(c);
+    if(it!=listenList.end()){
+        debugEV << "Atualizando info do node:" << c << " head agora eh: " << h << endl;
+        it->setlastseen(simTime().dbl());
+        it->sethead(h);
+        it->setneighlist(nl);
+    }else{
+        listenList.push_back(Neighbor(c, h , simTime().dbl(), ""));
+        std::sort(listenList.begin(),listenList.end(),Neighbor::cmp_neigh);
+        std::reverse(listenList.begin(),listenList.end());
+    }
+
+}
 
 void RealLowestID::removeCandidate(int c){
     std::vector<Neighbor>::iterator nc = findCandidate(c);
@@ -480,11 +526,45 @@ void RealLowestID::removeCandidate(Neighbor c){
 void RealLowestID::flushCandidates(){
     listenList.clear();
 }
-
+/*
+ * A eleicao funciona ordenando os n—s vizinhos que est‹o viziveis dentro do tempo de timeout e n‹o s‹o publicamente childs
+ * FIXME: Adicionar lastseen
+ */
 int RealLowestID::getElected(){
     std::sort(listenList.begin(),listenList.end(),Neighbor::cmp_neigh);
-    std::reverse(listenList.begin(),listenList.end());
+    Neighbor *hc = &listenList.back();
+    std::vector<Neighbor>::iterator itt = listenList.begin();
+    while(itt != listenList.end()){
+        if(((itt->getLastseen()+ getNodeTimeout()) < simTime().dbl())&&(itt->getNode() != myAddress)){
+            listenList.erase(itt);
+        }else{
+            itt++;
+        }
+    }
+
+    for(std::vector<Neighbor>::iterator it = listenList.begin();it != listenList.end(); it++){
+        if(it->getNode() == myAddress){
+            debugEV << "Selecionado " << it->getNode() << endl;
+            hc = &(*it);
+            break;
+        }
+        if(it->isChild())
+            continue;
+        debugEV << "Selecionado " << it->getNode() << endl;
+        hc = &(*it);
+        break;
+    }
+    /*std::reverse(listenList.begin(),listenList.end());
     Neighbor hc = listenList.back();
+    while(hc != listenList.front()){
+        Neighbor hc = listenList.back();
+         if
+    */
+    debugEV << "Vizinhos: ";
+    for(std::vector<Neighbor>::iterator it = listenList.begin(); it != listenList.end(); it++){
+        debugEV << it->getNode() << ", ";
+    }
+    debugEV << endl;
     //removeCandidate(hc);
-    return hc.getNode();
+    return hc->getNode();
 }

@@ -46,6 +46,7 @@ public:
         CLUSTER_DATA_PACKET = 13001,
         CLUSTER_CONTROL_BLOCK,
         CLUSTER_BASE_PING,
+        CLUSTER_BASE_LEAVE,
         CLUSTER_BASE_POLL,
         LAST_BASE_CLUSTER_MESSAGE_KIND
     };
@@ -150,8 +151,13 @@ protected:
     virtual void HeadPolling(cMessage *msg);
     virtual void ChildPolling(cMessage *msg);
     virtual void UndefinedPolling(cMessage *msg);
+    virtual void handleLeave(ClusterPkt*);
+
+
     virtual int isHeadValid(int,int){return true;};
     virtual void BroadPing();
+    virtual void SendLeave();
+    virtual void NotifyLeave();
     virtual void NodePing(LAddress::L3Type);
     virtual void Pong(LAddress::L3Type);
     virtual void updateSeen(LAddress::L3Type);
@@ -174,6 +180,9 @@ protected:
     cDisplayString& getNodeDisplayString();
     void setTTString(char*);
     virtual void nodeGarbageCollector();
+
+    void createReset(int);
+
 
 };
 

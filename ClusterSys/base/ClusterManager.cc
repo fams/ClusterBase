@@ -111,7 +111,8 @@ void ClusterManager::removeChild(LAddress::L3Type childAddress)
 {
     std::map<LAddress::L3Type,NodeEntry>::iterator it;
     it = ChildList.find(childAddress);
-    ChildList.erase(it);
+    if(it != ChildList.end())
+        ChildList.erase(it);
 }
 
 
@@ -211,7 +212,7 @@ void ClusterManager::handleNetlayerMsg(cMessage *msg)
     emit(rxMessageSignal,1);
 
     switch (msg->getKind()) {
-    case CLUSTER_BASE_PING:
+    case CLUSTER_BASE_PING:{
         ClusterPkt *m;
         m = static_cast<ClusterPkt *>(msg);
 
@@ -220,7 +221,13 @@ void ClusterManager::handleNetlayerMsg(cMessage *msg)
         handlePingMsg(m);
         /*delete msg;
         msg = 0;*/
-        break;
+    }break;
+    case CLUSTER_BASE_LEAVE:{
+        ClusterPkt *m;
+        m = static_cast<ClusterPkt *>(msg);
+        handleLeave(m);
+    }
+    break;
     }
 }
 
@@ -291,13 +298,6 @@ cDisplayString & ClusterManager::getNodeDisplayString()
     //return getParentModule()->getParentModule()->getDisplayString();
 }
 
-/*
-std::map<LAddress::L3Type,NodeEntry>::iterator  ClusterManager::getChild(LAddress::L3Type childAddress)
-{
-    return ChildList.find(childAddress);
-
-}
-*/
 void ClusterManager::setTTString(char *tt)
 {
     if (!ev.isGUI())
@@ -305,6 +305,29 @@ void ClusterManager::setTTString(char *tt)
     cDisplayString& dispStr = getNodeDisplayString();
     dispStr.setTagArg("tt", 0, tt);
 }
+
+void ClusterManager::HeadPolling(cMessage *msg){
+    debugEV << "Handle head Polling" << endl;
+    debugEV << "Iniciando Garbage collector com : " << ChildList.size() << endl;
+    nodeGarbageCollector();
+    debugEV << "Finalizando Garbage collector com : " << ChildList.size() << endl;
+    int ActiveChilds, TotalChilds;
+    debugEV << "Lista de afiliatdos tem: " << ChildList.size() << endl;
+    ActiveChilds = TotalChilds = ChildList.size();
+    BroadPing();
+    //debugEV << ": "<< TotalChilds << "\t ActiveChilds: " << ActiveChilds << endl;
+    if(isHeadValid(TotalChilds,ActiveChilds)){
+        cancelEvent(resetTimer);
+        int rndTime = (dblrand() * myAddress);
+        scheduleAt( simTime() + nodeTimeout + rndTime , resetTimer);
+    }else{
+        debugEV << "Tenho menos afiliados que o minimo, agendando um RESET" <<endl;
+        SendLeave();
+        cancelEvent(resetTimer);
+        scheduleAt( simTime() + 0.1, resetTimer);
+    }
+}
+
 void ClusterManager::ChildPolling(cMessage *msg){
     debugEV << "Handle child Polling" << endl;
     if ((headLastSeen + nodeTimeout )  < simTime().dbl()){
@@ -314,15 +337,17 @@ void ClusterManager::ChildPolling(cMessage *msg){
     }else{
         debugEV << "Vi meu Head em: " << headLastSeen << " timeout em: " << (headLastSeen + nodeTimeout) << endl;
         cancelEvent(resetTimer);
-        scheduleAt( headLastSeen + nodeTimeout  , resetTimer);
+        scheduleAt( simTime() + headLastSeen + nodeTimeout  , resetTimer);
     }
 }
 void ClusterManager::UndefinedPolling(cMessage *msg){
 }
+void ClusterManager::createReset(int signal){
+    resetTimer      = new cMessage("reset-timer", signal);
+}
 
 void ClusterManager::nodeGarbageCollector(){
     int ActiveChilds, TotalChilds;
-    debugEV << "Temos: " << ChildList.size() << endl;
     ActiveChilds = TotalChilds = ChildList.size();
 
     for( std::map<LAddress::L3Type, NodeEntry> ::iterator it = ChildList.begin(); it != ChildList.end(); it++){
@@ -340,20 +365,16 @@ void ClusterManager::BroadPing(){
     setPktValues(pkt,CLUSTER_PING, getHeadAddress(), myAddress);
     sendBroadcast(pkt);
 }
-void ClusterManager::HeadPolling(cMessage *msg){
-    debugEV << "Handle head Polling" << endl;
-    nodeGarbageCollector();
-    int ActiveChilds, TotalChilds;
-    debugEV << "Temos: " << ChildList.size() << endl;
-    ActiveChilds = TotalChilds = ChildList.size();
-
-    BroadPing();
-    debugEV << "TotalChilds: "<< TotalChilds << "\t ActiveChilds: " << ActiveChilds << endl;
-    if(isHeadValid(TotalChilds,ActiveChilds)){
-        cancelEvent(resetTimer);
-        int rndTime = (dblrand() * myAddress);
-        scheduleAt( simTime() + nodeTimeout + rndTime , resetTimer);
-    }
+void ClusterManager::SendLeave(){
+    ClusterPkt *pkt = new ClusterPkt("DIRECT: HEAD FORCE LEAVE", CLUSTER_BASE_LEAVE);
+    setPktValues(pkt,CLUSTER_FORCE_LEAVE, myAddress, myAddress);
+    sendBroadcast(pkt);
+}
+void ClusterManager::NotifyLeave(){
+    ClusterPkt *pkt = new ClusterPkt("DIRECT: CHILD NOTIFY LEAVE",
+            CLUSTER_BASE_LEAVE);
+    setPktValues(pkt, CLUSTER_NOTIFY_LEAVE, getHeadAddress(), myAddress);
+    sendDirectMessage(pkt, getHeadAddress());
 }
 void ClusterManager::handlePolling(cMessage *msg){
     debugEV << "Received polling event!!!!" << endl;
@@ -375,6 +396,25 @@ void ClusterManager::handlePolling(cMessage *msg){
         }
         //switch(nodeType){
 
+}
+void ClusterManager::handleLeave(ClusterPkt *msg){
+    int msgType = msg->getMsgtype();
+    switch(msgType){
+    case CLUSTER_FORCE_LEAVE:{
+        if ((getCurrentRole() != HEAD_NODE) && (msg->getHeadId() == getHeadAddress())){
+            debugEV << "Recebi uma desconexao forcada, agendando um RESET" <<endl;
+            cancelEvent(resetTimer);
+            scheduleAt( simTime() + 0.1, resetTimer);
+        }
+    }
+    break;
+    case CLUSTER_NOTIFY_LEAVE:{
+        if (getCurrentRole() == HEAD_NODE){
+            removeChild(msg->getSrcAddr());
+        }
+    }
+    break;
+    }
 }
 void ClusterManager::sendBroadcast(ClusterPkt* pkt)
 {

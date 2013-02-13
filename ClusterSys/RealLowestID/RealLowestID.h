@@ -37,9 +37,11 @@ class Neighbor{
 private:
     int node;
     double lastseen;
+    int head;
     std::string neighlist;
 public:
-    Neighbor(int n, double l, std::string s): node(n),lastseen(l),neighlist(s) {};
+    Neighbor(int n, double l, std::string s): node(n),lastseen(l),neighlist(s),head(n) {};
+    Neighbor(int n, int h, double l, std::string s): node(n),lastseen(l),head(h),neighlist(s) {};
 public:
     void setlastseen(double l){
         lastseen = l;
@@ -47,6 +49,9 @@ public:
     void setneighlist(std::string s){
         neighlist = s;
     };
+    void sethead(int h){
+        head = h;
+    }
     static bool cmp_neigh(const Neighbor a, const Neighbor b){
         return (a.node < b.node);
     }
@@ -64,6 +69,10 @@ public:
     }
     double getLastseen(){
         return lastseen;
+    }
+    //Verifica se Ž child
+    bool isChild(){
+        return (node != head);
     }
 
 };
@@ -245,6 +254,7 @@ protected:
 
 	//Metodos de selecao de candidato
 	void addCandidate(int, std::string );
+	void addCandidate(int,int, std::string );
 
 	void removeCandidate(int);
 
@@ -253,6 +263,8 @@ protected:
 	void  flushCandidates();
 
 	int  getElected();
+
+	void migrate(int);
 
 	std::vector<Neighbor>::iterator findCandidate(int);
     std::vector<Neighbor>::iterator findCandidate(Neighbor);
