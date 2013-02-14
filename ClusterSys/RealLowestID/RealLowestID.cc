@@ -112,51 +112,59 @@ void RealLowestID::finish()
 
 int RealLowestID::isHeadValid(int TotalChilds, int ActiveChilds){
 
-    if (clusterNodeState < HEAD_NEIGH){
+    if (clusterNodeState < HEAD_NEIGH || TotalChilds == 0){
         return 1;
     }
     return (ActiveChilds > (childLostPercentage * TotalChilds));
 }
 
 void RealLowestID::migrate(int hc){
-    if(getCurrentRole() == CHILD_NODE){
-        Neighbor n = *(findCandidate(hc));
-        //Se o candidato n‹o eh um head nao migra
-        if(n.isChild())
-            return;
-        //Se o head atual eh o menor nao migra
-        if(getHeadAddress() <= hc)
-            return;
+    if(getCurrentRole() == UNDEFINED_NODE)
+        return;
+    Neighbor n = *(findCandidate(hc));
+    //Se o candidato n‹o eh um head nao migra
+    if(n.isChild())
+        return;
+    //Se o head atual eh o menor nao migra
+    if(getHeadAddress() <= hc)
+        return;
+    switch(getCurrentRole()){
+    case CHILD_NODE:{
         NotifyLeave();
+    };
+    break;
+    case HEAD_NODE:{
         //Reseting all
-        debugEV << "Migrando..." << endl;
-
-        setCurrentRole(UNDEFINED_NODE);
-
-        findHost()->bubble("Migrando");
-
-        //Display String
-        char* tt = new char(20);
-        sprintf(tt, "MyAddr is %i" , myAddress);
-        setTTString(tt);
-
-        //Tenta o Rejoin
-        debugEV << "Tentando me afiliar a outro head." << endl;
-        clusterNodeState = CHILD_JOIN;
-        debugEV << "Node: " <<myAddress << " tentando se afiliar ao no " << hc << endl;
-
-        //Envia Mensagem de Join para o HEAD
-        RealLowestIDPkt *pkt = new RealLowestIDPkt("DIRECT: CLUSTER_JOIN", CLUSTER_FORMATION_PACKET);
-        setPktValues(pkt,CLUSTER_JOIN, hc, myAddress);
-        sendDirectMessage(pkt, hc);
-
-        //Agendando Eleicao
-        delayTimer = new cMessage("LID-timer", DEFINE_HEAD);
-        cancelEvent(delayTimer);
-        double schedtime = simTime().dbl() + electionTime;
-        debugEV << "Agendando eleicao para " << schedtime <<endl;
-        scheduleAt( schedtime , delayTimer);
+        SendLeave();
+        clearChilds();
     }
+    break;
+    }
+    //Reseting all
+    debugEV << "Migrando..." << endl;
+    setCurrentRole(UNDEFINED_NODE);
+    findHost()->bubble("Migrando");
+    //Display String
+    char* tt = new char(20);
+    sprintf(tt, "MyAddr is %i" , myAddress);
+    setTTString(tt);
+
+    //Tenta o Rejoin
+    debugEV << "Tentando me afiliar a outro head." << endl;
+    clusterNodeState = CHILD_JOIN;
+    debugEV << "Node: " <<myAddress << " tentando se afiliar ao no " << hc << endl;
+
+    //Envia Mensagem de Join para o HEAD
+    RealLowestIDPkt *pkt = new RealLowestIDPkt("DIRECT: CLUSTER_JOIN", CLUSTER_FORMATION_PACKET);
+    setPktValues(pkt,CLUSTER_JOIN, hc, myAddress);
+    sendDirectMessage(pkt, hc);
+
+    //Agendando Eleicao
+    delayTimer = new cMessage("LID-timer", DEFINE_HEAD);
+    cancelEvent(delayTimer);
+    double schedtime = simTime().dbl() + electionTime;
+    debugEV << "Agendando eleicao para " << schedtime <<endl;
+    scheduleAt( schedtime , delayTimer);
 }
 void RealLowestID::handleReset(cMessage *msg){
 	//Reseting all

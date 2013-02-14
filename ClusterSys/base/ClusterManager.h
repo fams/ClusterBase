@@ -120,6 +120,8 @@ public:
 
     void removeChild(LAddress::L3Type);
 
+    void clearChilds();
+
     //std::map<LAddress::L3Type,NodeEntry>::iterator getChild(LAddress::L3Type);
 
     NodePhase getCurrentPhase();

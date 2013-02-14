@@ -115,6 +115,9 @@ void ClusterManager::removeChild(LAddress::L3Type childAddress)
         ChildList.erase(it);
 }
 
+void ClusterManager::clearChilds(){
+    ChildList.clear();
+}
 
 
 std::map<LAddress::L3Type,NodeEntry> ClusterManager::getChildList()
@@ -272,6 +275,7 @@ void ClusterManager::setCurrentRole(NodeRole newRole)
         if(currentRole == HEAD_NODE){
             //simtime_t lifetime;
             lifetime = simTime() - lastRoleChange;
+            debugEV << "Cluster Lifetime: " << lifetime.dbl() <<endl;
             recClusterLifeTime.record(lifetime);
         }
         lastRoleChange = simTime();

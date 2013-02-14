@@ -62,7 +62,7 @@ void WorldUtilityStatsCluster::receiveSignal(cComponent *source, simsignal_t sig
 	    const ClusterStatisticsPacket* p = static_cast<const ClusterStatisticsPacket*>(obj);
 	    NodeStatusList[addr] = p->getcurrentRole();
 	    if (p->getcurrentRole() != p->getlastRole()){
-	        if(p->getcurrentRole() == HEAD_NODE){
+	        if(p->getlastRole() == HEAD_NODE){
 	            clusterLifeTime.record( p->getLifeTime());
 	        }
 	    }

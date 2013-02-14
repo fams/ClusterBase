@@ -100,7 +100,7 @@ ClusterLowestID::~ClusterLowestID() {
 
 void ClusterLowestID::finish()
 {
-	recordScalar("dropped", nbPacketDropped);
+	//recordScalar("dropped", nbPacketDropped);
 }
 
 int ClusterLowestID::isHeadValid(int TotalChilds, int ActiveChilds){
