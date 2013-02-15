@@ -206,8 +206,8 @@ int MCFAAutomata::removeAction(int node){
     //removido += atual - ActionSet.size();
 }
 
-int MCFAAutomata::ActionExists(int node){
-    return (std::find(ActionSet.begin(), ActionSet.end(), node) ==  ActionSet.end());
+bool MCFAAutomata::ActionExists(int node){
+    return (std::find(ActionSet.begin(), ActionSet.end(), node) !=  ActionSet.end());
 }
 std::vector<int> MCFAAutomata::garbageCollector(simtime_t threshold){
     std::vector<int> removidos;
@@ -247,4 +247,62 @@ double MCFAAutomata::getT(){
     //ERMk += Automata->getERMt();
     //T = ERMk / (Automata->getDegree() + 1);
     return  ERMk / ActionSet.size();
+}
+double MCFAAutomata::getT2(){
+
+    if (ActionSet.size() > 4){
+
+/*        typedef std::pair<int, double> mypair;
+
+        struct IntCmp {
+            bool operator()(const mypair &lhs, const mypair &rhs) {
+                return lhs.second < rhs.second;
+            }
+        };
+        std::vector<mypair> myvec(ActionSet.begin(), ActionSet.end());
+        int ActionSet.size()
+
+        std::partial_sort(myvec.begin(), myvec.begin() + 10, myvec.end(), IntCmp());
+
+        for (int i = 0; i < 10; ++i) {
+            std::cout << i << ": " << myvec[i].first
+                << "-> " << myvec[i].second << "\n";
+        }
+
+        std::sort(v.begin(),v.end(),mycmp);
+        int pos=ActionSet.size() / 5;
+      for (size_t i = 0; i < v.size(); ++i) {
+           << v[i].first << " , " << v[i].second << "\n";
+        }*/
+        return 0;
+
+    }else{
+    double ERMk = 0;
+    //debugEV << "ERMi[ch]" << ERMi[ch] << endl;
+    for(std::vector<int>::iterator it = ActionSet.begin();it != ActionSet.end(); it++){
+    //for (std::map<int, double>::iterator it = ERMi.begin(); it != ERMi.end(); it++) {
+         //debugEV << (*it).first << " it = " << (*it).second << endl;
+        ERMk += ERMi[*it];
+    }
+    //ERMk += Automata->getERMt();
+    //T = ERMk / (Automata->getDegree() + 1);
+    return  ERMk / ActionSet.size();
+    }
+}
+std::string MCFAAutomata::prtERMi(){
+    std::ostringstream out;
+    out << "ERMi ";
+    for(std::map<int,double>::iterator it = ERMi.begin(); it != ERMi.end();it++){
+        out << it->first << ":" << it->second << endl;
+    }
+    return out.str();
+
+}
+std::string MCFAAutomata::prtProb(){
+    std::ostringstream out;
+    out << "ProbVector" << endl;
+    for(int i=0;i<ActionSet.size();i++){
+        out << "Node[" << ActionSet[i] << "] Prob:"<< ActionSetProperties[ActionSet[i]].Probability << " W:" << ERMi[ActionSet[i]] <<endl;
+    }
+    return out.str();
 }

@@ -10,9 +10,11 @@
 #include <vector>
 #include <map>
 #include <iostream>
+#include <ostream>
 #include <string>
 #include <algorithm>
 #include <omnetpp.h>
+#include <utility>
 
 enum ClusterNodeStates{
     UNDEFINED       = 0,
@@ -96,7 +98,7 @@ public:
 	std::vector<int> garbageCollector(simtime_t);
 
     void setMyID(double MyID);
-    int ActionExists(int node);
+    bool ActionExists(int node);
     //permite atualizar ultima aparição do node
     void updateSeen(int);
     //gambi
@@ -110,8 +112,12 @@ public:
 
     //Obtem o Parametro T
     double getT();
+    double getT2();
 
     std::ostringstream msg;
+
+    std::string prtERMi();
+    std::string prtProb();
 
 
 };

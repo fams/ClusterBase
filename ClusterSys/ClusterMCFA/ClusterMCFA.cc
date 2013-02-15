@@ -519,6 +519,7 @@ void ClusterMCFA::handleMCFAControl(ClusterMCFAPkt *m) {
 
         if (m->getQuestion() == 1) {
             //Isso é um pedido de RERM
+
             debugEV << "Respondendo RERM: De:" << myAddress << " --> "
                     << m->getSrcAddr() << endl;
             ClusterMCFAPkt *pkt = new ClusterMCFAPkt("DirectCast RERM",
@@ -526,8 +527,14 @@ void ClusterMCFA::handleMCFAControl(ClusterMCFAPkt *m) {
             updateSeen(m->getSrcAddr());
             pkt->setMsgtype(MCFA_RERM);
             pkt->setQuestion(0);
-            debugEV << "Enviando ERM de " << Automata->getERMt() << endl;
-            pkt->setERM(Automata->getERMt());
+            //Se eu for CHILD eu saio fora
+            //if(getCurrentRole() == CHILD_NODE){
+                //debugEV << "Enviando ERM de " << 1 << endl;
+              //  pkt->setERM(1);
+            //}else{
+                debugEV << "Enviando ERM de " << Automata->getERMt() << endl;
+                pkt->setERM(Automata->getERMt());
+            //}
             sendDirectMessage(pkt, m->getSrcAddr());
         } else {
             //Isso é um retorno
@@ -583,14 +590,14 @@ void ClusterMCFA::handleMCFAControl(ClusterMCFAPkt *m) {
         /* Modo original do MCF
          *
          */
-
         debugEV << "ERM atual " << Automata->getERMt() <<endl;
         if(clusterNodeState == HEADSELECT) {
             debugEV << "Estou em HEADSELECT atualizando EPOCH" << endl;
-            MCF();
             if(Automata->ActionExists(m->getSrcAddr())){
+                debugEV << "Existe a Acao, vou atualizar" <<endl;
                 Automata->newEpoch(m->getSrcAddr(), mi, getMobInfo());
             }
+            MCF();
         }else{
             debugEV << "Estou em ASFREQ criando EPOCH" << endl;
             Automata->newEpoch(m->getSrcAddr(), mi, getMobInfo());
@@ -611,6 +618,8 @@ int ClusterMCFA::MCF() {
     debugEV << "----------INICIANDO MCF------------" << endl;
     if (currStage == 0) {
         debugEV << "----------STAGE 0------------" << endl;
+        debugEV << "Vou escolher" <<endl;
+        debugEV << Automata->prtProb();
         ch = Automata->randNeigh();
         //Selected CH is me, set w as my ERM and go to stage 2
         if(ch < 0){
@@ -667,6 +676,7 @@ int ClusterMCFA::MCF() {
     debugEV << "Novo ERMk eh: " << ERMk << endl;
      */
     //T = ((T*stageK)+Automata->getERMt()/stageK);
+    debugEV << Automata->prtProb();
     T = Automata->getT();
     stageK++;
 
