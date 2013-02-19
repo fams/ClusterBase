@@ -41,6 +41,8 @@ EXECUTE_ON_STARTUP(
     e->insert(MCFA_CHSEL, "MCFA_CHSEL");
     e->insert(MCFA_LREQ, "MCFA_LREQ");
     e->insert(MCFA_MOBINFO, "MCFA_MOBINFO");
+    e->insert(MCFA_CLINFO, "MCFA_CLINFO");
+    e->insert(MCFA_REMOVE, "MCFA_REMOVE");
 );
 
 Register_Class(ClusterMCFAPkt);
@@ -54,6 +56,7 @@ ClusterMCFAPkt::ClusterMCFAPkt(const char *name, int kind) : ClusterPkt(name,kin
     this->Speed_var = 0;
     this->Direction_var = 0;
     this->Question_var = 0;
+    this->childinfo_var = 0;
 }
 
 ClusterMCFAPkt::ClusterMCFAPkt(const ClusterMCFAPkt& other) : ClusterPkt(other)
@@ -82,6 +85,7 @@ void ClusterMCFAPkt::copy(const ClusterMCFAPkt& other)
     this->Speed_var = other.Speed_var;
     this->Direction_var = other.Direction_var;
     this->Question_var = other.Question_var;
+    this->childinfo_var = other.childinfo_var;
 }
 
 void ClusterMCFAPkt::parsimPack(cCommBuffer *b)
@@ -94,6 +98,7 @@ void ClusterMCFAPkt::parsimPack(cCommBuffer *b)
     doPacking(b,this->Speed_var);
     doPacking(b,this->Direction_var);
     doPacking(b,this->Question_var);
+    doPacking(b,this->childinfo_var);
 }
 
 void ClusterMCFAPkt::parsimUnpack(cCommBuffer *b)
@@ -106,6 +111,7 @@ void ClusterMCFAPkt::parsimUnpack(cCommBuffer *b)
     doUnpacking(b,this->Speed_var);
     doUnpacking(b,this->Direction_var);
     doUnpacking(b,this->Question_var);
+    doUnpacking(b,this->childinfo_var);
 }
 
 int ClusterMCFAPkt::getMsgtype() const
@@ -178,6 +184,16 @@ void ClusterMCFAPkt::setQuestion(int Question)
     this->Question_var = Question;
 }
 
+const char * ClusterMCFAPkt::getChildinfo() const
+{
+    return childinfo_var.c_str();
+}
+
+void ClusterMCFAPkt::setChildinfo(const char * childinfo)
+{
+    this->childinfo_var = childinfo;
+}
+
 class ClusterMCFAPktDescriptor : public cClassDescriptor
 {
   public:
@@ -225,7 +241,7 @@ const char *ClusterMCFAPktDescriptor::getProperty(const char *propertyname) cons
 int ClusterMCFAPktDescriptor::getFieldCount(void *object) const
 {
     cClassDescriptor *basedesc = getBaseClassDescriptor();
-    return basedesc ? 7+basedesc->getFieldCount(object) : 7;
+    return basedesc ? 8+basedesc->getFieldCount(object) : 8;
 }
 
 unsigned int ClusterMCFAPktDescriptor::getFieldTypeFlags(void *object, int field) const
@@ -244,8 +260,9 @@ unsigned int ClusterMCFAPktDescriptor::getFieldTypeFlags(void *object, int field
         FD_ISEDITABLE,
         FD_ISEDITABLE,
         FD_ISEDITABLE,
+        FD_ISEDITABLE,
     };
-    return (field>=0 && field<7) ? fieldTypeFlags[field] : 0;
+    return (field>=0 && field<8) ? fieldTypeFlags[field] : 0;
 }
 
 const char *ClusterMCFAPktDescriptor::getFieldName(void *object, int field) const
@@ -264,8 +281,9 @@ const char *ClusterMCFAPktDescriptor::getFieldName(void *object, int field) cons
         "Speed",
         "Direction",
         "Question",
+        "childinfo",
     };
-    return (field>=0 && field<7) ? fieldNames[field] : NULL;
+    return (field>=0 && field<8) ? fieldNames[field] : NULL;
 }
 
 int ClusterMCFAPktDescriptor::findField(void *object, const char *fieldName) const
@@ -279,6 +297,7 @@ int ClusterMCFAPktDescriptor::findField(void *object, const char *fieldName) con
     if (fieldName[0]=='S' && strcmp(fieldName, "Speed")==0) return base+4;
     if (fieldName[0]=='D' && strcmp(fieldName, "Direction")==0) return base+5;
     if (fieldName[0]=='Q' && strcmp(fieldName, "Question")==0) return base+6;
+    if (fieldName[0]=='c' && strcmp(fieldName, "childinfo")==0) return base+7;
     return basedesc ? basedesc->findField(object, fieldName) : -1;
 }
 
@@ -298,8 +317,9 @@ const char *ClusterMCFAPktDescriptor::getFieldTypeString(void *object, int field
         "double",
         "double",
         "int",
+        "string",
     };
-    return (field>=0 && field<7) ? fieldTypeStrings[field] : NULL;
+    return (field>=0 && field<8) ? fieldTypeStrings[field] : NULL;
 }
 
 const char *ClusterMCFAPktDescriptor::getFieldProperty(void *object, int field, const char *propertyname) const
@@ -349,6 +369,7 @@ std::string ClusterMCFAPktDescriptor::getFieldAsString(void *object, int field, 
         case 4: return double2string(pp->getSpeed());
         case 5: return double2string(pp->getDirection());
         case 6: return long2string(pp->getQuestion());
+        case 7: return oppstring2string(pp->getChildinfo());
         default: return "";
     }
 }
@@ -370,6 +391,7 @@ bool ClusterMCFAPktDescriptor::setFieldAsString(void *object, int field, int i, 
         case 4: pp->setSpeed(string2double(value)); return true;
         case 5: pp->setDirection(string2double(value)); return true;
         case 6: pp->setQuestion(string2long(value)); return true;
+        case 7: pp->setChildinfo((value)); return true;
         default: return false;
     }
 }
@@ -390,8 +412,9 @@ const char *ClusterMCFAPktDescriptor::getFieldStructName(void *object, int field
         NULL,
         NULL,
         NULL,
+        NULL,
     };
-    return (field>=0 && field<7) ? fieldStructNames[field] : NULL;
+    return (field>=0 && field<8) ? fieldStructNames[field] : NULL;
 }
 
 void *ClusterMCFAPktDescriptor::getFieldStructPointer(void *object, int field, int i) const

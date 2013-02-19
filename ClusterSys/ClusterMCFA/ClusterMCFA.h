@@ -34,7 +34,7 @@ typedef std::list<int> NodeList;
 
 class ClusterMCFA : public ClusterManager
 {
-
+private: //types
 	MCFAAutomata *Automata;
 	//std::map<int,double> ERMi; //ERM dos nodes
 
@@ -43,7 +43,7 @@ class ClusterMCFA : public ClusterManager
 	//simsignal_t rxMessageSignal;
 	//simsignal_t txMessageSignal;
 
-public:
+public: //Types
 	/** @brief The message kinds used by this layer.*/
 	enum MCFAApplLayerMessageKinds {
 		/** self message kinds */
@@ -78,6 +78,8 @@ public:
 		LAST_CLUSTER_MESSAGE_KIND,
 	};
 
+public: //Methods
+
 	virtual void initialize(int stage);
 
 	virtual ~ClusterMCFA();
@@ -85,7 +87,7 @@ public:
 	/** @brief Called at the end of the simulation to record statistics.*/
 	virtual void finish();
 
-protected:
+protected: //Types
 	//Intervalo do GPS na versao MiXiM 2.0
 	double gpsInterval;
 
@@ -114,6 +116,8 @@ protected:
 	cMessage *sendMobTimer;
 
 	cMessage *reinitTimer;
+
+
 
 	/* @brief tempo de vida do cluster (tempo de vida do node) */
     simtime_t clusterLifeTime;
@@ -176,44 +180,65 @@ protected:
     //configured probability P
     double P;
 
-protected:
-//Handlers
+    /**
+     * MERGE
+     */
+    double mergeMobility;
+
+    double mergeTime;
+
+    bool   mergeEnable;
+protected: //Methods
+    /*
+     * Handlers
+     */
+    /* Externos */
+    /** @brief Handle Cluster Control Messages */
+    void handleMCFAControl(ClusterMCFAPkt *m);
+    /** @brief Handle messages from lower layer */
+    virtual void handleNetlayerMsg(cMessage *);
+
+    void handleMerge(ClusterMCFAPkt *);
+
+    /* Locais */
 	/** @brief Handle self messages such as timer... */
 	virtual void handleSelfMsg(cMessage *msg);
-
-	/** @brief Handle messages from lower layer */
-	virtual void handleNetlayerMsg(cMessage *);
-
 	/** @brief Handle event RESET */
 	virtual void handleReset(cMessage *msg);
     //virtual void handlePolling(cMessage*);
     virtual void handlePingMsg(ClusterPkt *msg);
 
-//Polling Types
+    /* Polling */
 	virtual void HeadPolling(cMessage *msg);
 	virtual void ChildPolling(cMessage *msg);
     virtual void UndefinedPolling(cMessage *msg);
 
-    virtual void updateSeen(LAddress::L3Type);
-
-
-
-
+/*
+ * Algoritmo de formacao
+ */
 	int MCF();
-
-	void handleMCFAControl(ClusterMCFAPkt *m);
-
-	//void handleClusterMessage(ClusterMCFAPkt* m);
-
-	MobInfo* getMobInfo();
+	void clusterMerge(int);
+/*
+ * Envio de mensagens
+ */
 
 	void sendCHSEL(int NodeAddr);
+
+	void sendLREQ(LAddress::L3Type NodeAddr);
 
 	//*Broadcast MobInfo */
 	void sendMobInfo();
 
-	void nodeGarbageCollector();
+/*
+ *  Utilitarios
+ */
+    MobInfo* getMobInfo();
 
+    virtual void updateSeen(LAddress::L3Type);
+
+	void nodeGarbageCollector();
+	std::vector<int> str2intList(const char *);
+	bool checkOverlap(std::vector<int>);
 };
 
 #endif /* MCFAAPPLLAYER_H_ */

@@ -32,6 +32,8 @@
  *     	MCFA_CHSEL	 	= 15060;
  *     	MCFA_LREQ 		= 15070;
  *     	MCFA_MOBINFO	= 15080;
+ *     	MCFA_CLINFO		= 15090;
+ *     	MCFA_REMOVE		= 15100;
  * };
  * </pre>
  */
@@ -43,7 +45,9 @@ enum MCFAMessageTypes {
     MCFA_JREP = 15050,
     MCFA_CHSEL = 15060,
     MCFA_LREQ = 15070,
-    MCFA_MOBINFO = 15080
+    MCFA_MOBINFO = 15080,
+    MCFA_CLINFO = 15090,
+    MCFA_REMOVE = 15100
 };
 
 /**
@@ -57,6 +61,7 @@ enum MCFAMessageTypes {
  * 	double Speed;
  * 	double Direction;
  * 	int Question;
+ * 	string childinfo;
  * };
  * </pre>
  */
@@ -70,6 +75,7 @@ class ClusterMCFAPkt : public ::ClusterPkt
     double Speed_var;
     double Direction_var;
     int Question_var;
+    opp_string childinfo_var;
 
   private:
     void copy(const ClusterMCFAPkt& other);
@@ -102,6 +108,8 @@ class ClusterMCFAPkt : public ::ClusterPkt
     virtual void setDirection(double Direction);
     virtual int getQuestion() const;
     virtual void setQuestion(int Question);
+    virtual const char * getChildinfo() const;
+    virtual void setChildinfo(const char * childinfo);
 };
 
 inline void doPacking(cCommBuffer *b, ClusterMCFAPkt& obj) {obj.parsimPack(b);}

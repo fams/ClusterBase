@@ -84,7 +84,7 @@ public:
 //	double getT();
 
 	/** @brief calcula a mobilidade relativa entre dois nodes */
-	double RM(MobInfo* a, MobInfo* b);
+	static double RM(MobInfo* a, MobInfo* b);
 
 	double getProbability(int node);
 

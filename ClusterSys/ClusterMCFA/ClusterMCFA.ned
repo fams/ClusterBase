@@ -49,6 +49,9 @@ simple ClusterMCFA extends ClusterManager
         double 	rewardP = default (0.1);
         double 	penaltyP = default(0.1);
         double	gpsInterval = default(1.0);
+        double  MergeMobility = default(0.1);
+        double  MergeTime = default(5);
+        bool    MergeEnable = default(false);
  //       int		timeout = default(20);
         
         @class(ClusterMCFA);

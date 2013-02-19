@@ -30,6 +30,7 @@ void WorldUtilityStatsCluster::initialize(int stage)
 
 		bitsSent = 0;
 		bitsReceived = 0;
+		affiliation = 0;
 
 		//register for global stats to collect
 		FindModule<>::findNetwork(this)->subscribe(BaseLayer::catPacketSignal, this);
@@ -62,6 +63,7 @@ void WorldUtilityStatsCluster::receiveSignal(cComponent *source, simsignal_t sig
 	    const ClusterStatisticsPacket* p = static_cast<const ClusterStatisticsPacket*>(obj);
 	    NodeStatusList[addr] = p->getcurrentRole();
 	    if (p->getcurrentRole() != p->getlastRole()){
+	        affiliation++;
 	        if(p->getlastRole() == HEAD_NODE){
 	            clusterLifeTime.record( p->getLifeTime());
 	        }
@@ -98,6 +100,9 @@ void WorldUtilityStatsCluster::finish()
 {
 	recordScalar("GlobalTrafficGenerated", bitsSent, "bit");
 	recordScalar("GlobalTrafficReceived", bitsReceived, "bit");
+	recordScalar("TotalAffiliationRate",affiliation/simTime());
+
+
 
 	if (bitrate) {
 		recordScalar("Traffic", bitsSent / bitrate / simTime());
@@ -107,6 +112,7 @@ void WorldUtilityStatsCluster::finish()
 	}
 	recCluster();
 	double hosts = NodeStatusList.size();
+	recordScalar("HostAffiliationRate",affiliation/simTime()/(hosts-1));
 	if(!par("bcTraffic"))
 		hosts = 2;
 	if (bitrate && hosts > 1) {

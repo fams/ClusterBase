@@ -29,6 +29,8 @@ enum MCFAMessageTypes
     	MCFA_CHSEL	 	= 15060;
     	MCFA_LREQ 		= 15070;
     	MCFA_MOBINFO	= 15080;
+    	MCFA_CLINFO		= 15090;
+    	MCFA_REMOVE		= 15100;
 }; 
     
 packet ClusterMCFAPkt extends ClusterPkt {
@@ -39,4 +41,5 @@ packet ClusterMCFAPkt extends ClusterPkt {
 	double Speed;
 	double Direction;
 	int Question;
+	string childinfo;
 };

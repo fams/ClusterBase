@@ -43,6 +43,7 @@ protected:
 
 	double bitrate;
 
+	int affiliation;
 
 	int catPacket;
 
@@ -61,6 +62,7 @@ protected:
 
 	//Vetores Globais de Role de Nos
 	cOutVector nH,nU,nC;
+
 
 
 protected:

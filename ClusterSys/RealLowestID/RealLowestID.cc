@@ -119,7 +119,7 @@ int RealLowestID::isHeadValid(int TotalChilds, int ActiveChilds){
 }
 
 void RealLowestID::migrate(int hc){
-    if(getCurrentRole() == UNDEFINED_NODE)
+    if(getCurrentRole() != HEAD_NODE)
         return;
     Neighbor n = *(findCandidate(hc));
     //Se o candidato n‹o eh um head nao migra

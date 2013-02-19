@@ -43,8 +43,8 @@ double MCFAAutomata::addAction(int node, MobInfo *mi, MobInfo* myMob){
 	double ERMt = RM(myMob, mi);
 	ActionSetProperties[node].ERMt = ERMt;
 	ActionSetProperties[node].lastseen = simTime();
-	delete mi;
-	delete myMob;
+	//delete mi;
+	//delete myMob;
 	return ERMt;
 }
 
@@ -79,11 +79,12 @@ void MCFAAutomata::newEpoch(int node, MobInfo* myMob, MobInfo *mi)
 	ActionSetProperties[node].lastseen = simTime();
 	for(i=0;i<ActionSet.size();i++){
 		RMt = RM(myMob, ActionSetProperties[node].Mobility );
+		//ERM^{T}_{(j,i)}  = 1/k \sum{
 		ActionSetProperties[node].ERMt = ((ActionSetProperties[node].ERMt * epoch) + RMt)/(epoch + 1);
 	}
 	epoch++;
-	delete myMob;
-	delete mi;
+	//delete myMob;
+	//delete mi;
 }
 void MCFAAutomata::updateSeen(int node){
     std::map<int, ActionSetData>::iterator it;
@@ -95,6 +96,7 @@ void MCFAAutomata::updateSeen(int node){
 //Atualiza o vetor de probabilidades quando Reforca
 void MCFAAutomata::reward(int Action){
 	int i=0;
+	//rewardP = 0.1
 	for( i=0; i< ActionSet.size();i++){
 		if(ActionSet[i] == Action){
 			ActionSetProperties[ActionSet[i]].Probability = ActionSetProperties[ActionSet[i]].Probability + rewardP * (1-ActionSetProperties[ActionSet[i]].Probability);
@@ -104,7 +106,9 @@ void MCFAAutomata::reward(int Action){
 	}
 }
 //Atualiza o vetor de probabilidades quando Pune
+
 void MCFAAutomata::penalize(int Action){
+    //penaltyP=0.1
 	int i=0;
 	for(i=0;i<ActionSet.size();i++){
 		if(ActionSet[i] == Action){
@@ -248,33 +252,20 @@ double MCFAAutomata::getT(){
     //T = ERMk / (Automata->getDegree() + 1);
     return  ERMk / ActionSet.size();
 }
+
 double MCFAAutomata::getT2(){
 
     if (ActionSet.size() > 4){
-
-/*        typedef std::pair<int, double> mypair;
-
-        struct IntCmp {
-            bool operator()(const mypair &lhs, const mypair &rhs) {
-                return lhs.second < rhs.second;
-            }
-        };
-        std::vector<mypair> myvec(ActionSet.begin(), ActionSet.end());
-        int ActionSet.size()
-
-        std::partial_sort(myvec.begin(), myvec.begin() + 10, myvec.end(), IntCmp());
-
-        for (int i = 0; i < 10; ++i) {
-            std::cout << i << ": " << myvec[i].first
-                << "-> " << myvec[i].second << "\n";
+        std::vector<double> erms;
+        for(std::vector<int>::iterator it = ActionSet.begin();it != ActionSet.end(); it++){
+        //for (std::map<int, double>::iterator it = ERMi.begin(); it != ERMi.end(); it++) {
+             //debugEV << (*it).first << " it = " << (*it).second << endl;
+            erms.push_back(ERMi[*it]);
         }
+        int pos = 3*((int)(ERMi.size()/4));
 
-        std::sort(v.begin(),v.end(),mycmp);
-        int pos=ActionSet.size() / 5;
-      for (size_t i = 0; i < v.size(); ++i) {
-           << v[i].first << " , " << v[i].second << "\n";
-        }*/
-        return 0;
+        std::sort( erms.begin(),erms.end());
+        return erms[ERMi.size()-pos];
 
     }else{
     double ERMk = 0;
