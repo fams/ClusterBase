@@ -232,7 +232,12 @@ protected: //Methods
 /*
  *  Utilitarios
  */
-    MobInfo* getMobInfo();
+	//Adiciona Informacaod e merge no pacote
+	void addMergeInfo(ClusterMCFAPkt *pkt);
+
+	//void updatePosition()
+
+	MobInfo* getMobInfo();
 
     virtual void updateSeen(LAddress::L3Type);
 

@@ -145,26 +145,30 @@ ClusterMCFA::~ClusterMCFA() {
 
 /* **********************************************************
  *
- *  Tratamento de mensagens do proprio modulo
+ *  Tratamento de eventos locais modulo
  *
  ***********************************************************/
 void ClusterMCFA::handleSelfMsg(cMessage *msg) {
     switch (msg->getKind()) {
+    //Poling de parceiros
     case POLL: {
         handlePolling(msg);
         debugEV << "Reagendando polling para " << simTime().dbl() + pollingTime << endl;
         scheduleAt( simTime() + pollingTime , pollingTimer);
     }
     break;
+    //Comando de Reset
     case RESET: {
         handleReset(msg);
     }
     break;
+    //Atualize sua posicao
     case UPDATE_POSITION: {
 
+        //Obtem o host
         BaseMobility* mob = FindModule<BaseMobility*>::findSubModule(
                 findHost());
-
+        //Obtem a posicao
         Coord HostCoor = mob->getCurrentPosition();
 
         debugEV << "Minha nova posicao e " << HostCoor.x << "," << HostCoor.y
@@ -846,42 +850,26 @@ void ClusterMCFA::sendMobInfo() {
     pkt->setDirection(((gps.getSpeed()==0)?0:gps.getDirection()));
     pkt->setSpeed(gps.getSpeed());
     pkt->setOriginId(myAddress);
+
+    //D‡ carona as informacoes de merge se o node for HEAD
     if (getCurrentRole() == HEAD_NODE  && mergeEnable){
-        //Gera lista de Afiliados
-        std::map<LAddress::L3Type, NodeEntry> cl = getChildList();
-        std::ostringstream out;
-        for(std::map<LAddress::L3Type, NodeEntry>::iterator it = cl.begin(); it != cl.end(); it++) {
-            out << it->first << ",";
-        }
-        pkt->setHeadId(myAddress);
-        pkt->setChildinfo(out.str().c_str());
-        pkt->setERM(Automata->getERMt());
+        addMergeInfo(pkt);
     }
 
     sendBroadcast(pkt);
 
-}/*
-void ClusterMCFA::sendCLINFO(){
-    debugEV << "ENVIANDO CLUSTER INFO: De:" << myAddress << endl;
-    ClusterMCFAPkt *pkt = new ClusterMCFAPkt("BROADCAST CLUSTINFO", MCFA_CTRL);
+}
+void ClusterMCFA::addMergeInfo(ClusterMCFAPkt *pkt){
     //Gera lista de Afiliados
     std::map<LAddress::L3Type, NodeEntry> cl = getChildList();
     std::ostringstream out;
     for(std::map<LAddress::L3Type, NodeEntry>::iterator it = cl.begin(); it != cl.end(); it++) {
-        debugEV << it->first << ",";
         out << it->first << ",";
     }
-    debugEV <<endl;
-    pkt->setMsgtype(MCFA_CLINFO);
-
+    pkt->setHeadId(myAddress);
     pkt->setChildinfo(out.str().c_str());
     pkt->setERM(Automata->getERMt());
-
-    pkt->setDirection(((gps.getSpeed()==0)?0:gps.getDirection()));
-    pkt->setSpeed(gps.getSpeed());
-    pkt->setOriginId(myAddress);
-    sendBroadcast(pkt);
-}*/
+}
 void ClusterMCFA::sendCHSEL(int NodeAddr) {
     debugEV << "ENVIANDO CHSEL: De:" << myAddress << " --> " << NodeAddr
             << endl;
@@ -898,4 +886,6 @@ void ClusterMCFA::sendLREQ(LAddress::L3Type NodeAddr) {
 
 
 }
+
+//void ClusterMCFA::updatePos
 
