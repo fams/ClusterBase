@@ -1,0 +1,10 @@
+#!/bin/bash
+for alg in LCC MCFA MCFA-GLUE; do
+  for model in RWP RPGM SLAW; do
+    for nodes in 30 60 90 ; do
+      for ((n=0;n<2;n++)) ; do
+        echo ./ClusterSys -u Cmdenv -c ${alg}${nodes}${model} -r $n  -n .:../../../Dropbox/omnetpp4.2/MiXiM/examples:../../../Dropbox/omnetpp4.2/MiXiM/src:../../../Dropbox/omnetpp4.2/MiXiM/tests -l ../../../Dropbox/omnetpp4.2/MiXiM/src/base/miximbase -l ../../../Dropbox/omnetpp4.2/MiXiM/tests/testUtils/miximtestUtils -l ../../../Dropbox/omnetpp4.2/MiXiM/tests/power/utils/powerTestUtils -l ../../../Dropbox/omnetpp4.2/MiXiM/src/modules/miximmodules omnetpp_$alg.ini;
+        done
+    done
+  done
+done
