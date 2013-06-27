@@ -53,14 +53,16 @@ public:
 protected:
     cOutVector recClusterLifeTime;
     /* @brief Canais vindos da net */
+    /** @brief Header lenght */
+    int headerLength;
+
     int NetNetlIn;
+
     int NetNetlOut;
 
     /** @brief Application ID */
     int myAddress;
 
-    /** @brief Header lenght */
-    int headerLength;
 
     /** @brief intervalo de polling */
     double pollingTime;
@@ -135,6 +137,8 @@ public:
     int getHeadAddress() const;
     LAddress::L3Type getAddress();
     void setHeadAddress(int headAddress);
+    double getHeadLastSeen() const;
+    void setHeadLastSeen(double headLastSeen);
 
 private:
     /** @brief Reset and restart */
@@ -154,6 +158,7 @@ protected:
     virtual void ChildPolling(cMessage *msg);
     virtual void UndefinedPolling(cMessage *msg);
     virtual void handleLeave(ClusterPkt*);
+    virtual double getTimeoutAt();
 
 
     virtual int isHeadValid(int,int){return true;};

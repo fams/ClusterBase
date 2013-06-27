@@ -17,7 +17,7 @@
 #define ClusterApplLayer_H_
 
 #include <vector>
-#include <String>
+#include <string>
 #include <algorithm>
 #include <sstream>
 
@@ -70,7 +70,7 @@ public:
     double getLastseen(){
         return lastseen;
     }
-    //Verifica se Ž child
+    //Verifica se child
     bool isChild(){
         return (node != head);
     }

@@ -21,7 +21,7 @@
 #include <algorithm>
 #include <sstream>
 #include <Move.h>
-#include <GPSinfo.h>
+#include <GPSInfo.h>
 
 #include "BaseApplLayer.h"
 #include <BaseMobility.h>

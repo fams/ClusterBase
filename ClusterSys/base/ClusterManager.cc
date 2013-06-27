@@ -168,7 +168,7 @@ void ClusterManager::handleSelfMsg(cMessage *msg)
 {
 }
 void ClusterManager::updateSeen(){
-    headLastSeen = simTime().dbl();
+    setHeadLastSeen(simTime().dbl());
 }
 
 void ClusterManager::Pong(LAddress::L3Type node){
@@ -346,6 +346,21 @@ void ClusterManager::ChildPolling(cMessage *msg){
 }
 void ClusterManager::UndefinedPolling(cMessage *msg){
 }
+double ClusterManager::getTimeoutAt()
+{
+    return headLastSeen + nodeTimeout;
+}
+
+double ClusterManager::getHeadLastSeen() const
+{
+    return headLastSeen;
+}
+
+void ClusterManager::setHeadLastSeen(double headLastSeen)
+{
+    this->headLastSeen = headLastSeen;
+}
+
 void ClusterManager::createReset(int signal){
     resetTimer      = new cMessage("reset-timer", signal);
 }
@@ -353,11 +368,18 @@ void ClusterManager::createReset(int signal){
 void ClusterManager::nodeGarbageCollector(){
     int ActiveChilds, TotalChilds;
     ActiveChilds = TotalChilds = ChildList.size();
+    if(ActiveChilds<1)
+        return;
 
-    for( std::map<LAddress::L3Type, NodeEntry> ::iterator it = ChildList.begin(); it != ChildList.end(); it++){
+    std::map<LAddress::L3Type, NodeEntry> ::iterator it = ChildList.begin();
+    while(it != ChildList.end()) {
         if (((it->second).lastSeen + nodeTimeout) < simTime().dbl() ){
             ActiveChilds--;
-            removeChild(it->first);
+            std::map<LAddress::L3Type, NodeEntry> ::iterator erase = it;
+            it++;
+            ChildList.erase(erase);
+        }else{
+            it++;
         }
     }
 }
@@ -453,8 +475,8 @@ void ClusterManager::sendDirectMessage(ApplPkt* pkt, LAddress::L3Type destAddr){
     debugEV << "Enviando Mensagem direta para " << destAddr << "!!" << endl;
     //Contabilizando pacotes enviados
     emit(txMessageSignal,1);
-    Packet p(packetLength, 1, 0)
-    emit(BaseMacLayer::catPacketSignal,&p);
+    //Packet p(packetLength, 1, 0)
+    //emit(BaseMacLayer::catPacketSignal,&p);
     sendNetLayer( pkt );
     debugEV << "Enviei agora" <<endl;
 }
