@@ -41,12 +41,9 @@ void RealLowestID::initialize(int stage)
 		//Messages
 		delayTimer 		= new cMessage("LID-Timer", DEFINE_HEAD);
 
-
-
 		pollingTimer	= new cMessage("polling-timer", POLLING);
 
 		publishTimer    = new cMessage("publish-timer", SEND_MYID);
-
 
 		//Parameters
 		electionTime        = par("electionTime");
@@ -79,7 +76,6 @@ void RealLowestID::initialize(int stage)
 		pollAttempt = 0;
 
 		createReset(DO_RESET);
-
 
 	} else if (stage == 1) {
 
@@ -487,70 +483,70 @@ void RealLowestID::sendMyID(){
 }
 
 std::vector<Neighbor>::iterator RealLowestID::findCandidate(int c){
-    return std::find(listenList.begin(), listenList.end(), Neighbor(c,0,"")) ;
+    return std::find(listeningList.begin(), listeningList.end(), Neighbor(c,0,"")) ;
 }
 std::vector<Neighbor>::iterator RealLowestID::findCandidate(Neighbor c){
-    return std::find(listenList.begin(), listenList.end(), c) ;
+    return std::find(listeningList.begin(), listeningList.end(), c) ;
 }
 
 void RealLowestID::addCandidate(int c, std::string nl) {
     std::vector<Neighbor>::iterator it = findCandidate(c);
-    if(it!=listenList.end()){
+    if(it!=listeningList.end()){
         it->setlastseen(simTime().dbl());
         it->setneighlist(nl);
     }else{
-        listenList.push_back(Neighbor(c, simTime().dbl(), ""));
-        std::sort(listenList.begin(),listenList.end(),Neighbor::cmp_neigh);
-        std::reverse(listenList.begin(),listenList.end());
+        listeningList.push_back(Neighbor(c, simTime().dbl(), ""));
+        std::sort(listeningList.begin(),listeningList.end(),Neighbor::cmp_neigh);
+        std::reverse(listeningList.begin(),listeningList.end());
     }
 
 }
 void RealLowestID::addCandidate(int c, int h, std::string nl) {
     std::vector<Neighbor>::iterator it = findCandidate(c);
-    if(it!=listenList.end()){
+    if(it!=listeningList.end()){
         debugEV << "Atualizando info do node:" << c << " head agora eh: " << h << endl;
         it->setlastseen(simTime().dbl());
         it->sethead(h);
         it->setneighlist(nl);
     }else{
-        listenList.push_back(Neighbor(c, h , simTime().dbl(), ""));
-        std::sort(listenList.begin(),listenList.end(),Neighbor::cmp_neigh);
-        std::reverse(listenList.begin(),listenList.end());
+        listeningList.push_back(Neighbor(c, h , simTime().dbl(), ""));
+        std::sort(listeningList.begin(),listeningList.end(),Neighbor::cmp_neigh);
+        std::reverse(listeningList.begin(),listeningList.end());
     }
 
 }
 
 void RealLowestID::removeCandidate(int c){
     std::vector<Neighbor>::iterator nc = findCandidate(c);
-    if(nc != listenList.end())
-        listenList.erase(nc);
+    if(nc != listeningList.end())
+        listeningList.erase(nc);
 }
 void RealLowestID::removeCandidate(Neighbor c){
     std::vector<Neighbor>::iterator nc = findCandidate(c);
-    if(nc != listenList.end())
-        listenList.erase(nc);
+    if(nc != listeningList.end())
+        listeningList.erase(nc);
 }
 
 void RealLowestID::flushCandidates(){
-    listenList.clear();
+    listeningList.clear();
 }
 /*
  * A eleicao funciona ordenando os n—s vizinhos que est‹o viziveis dentro do tempo de timeout e n‹o s‹o publicamente childs
  * FIXME: Adicionar lastseen
  */
 int RealLowestID::getElected(){
-    std::sort(listenList.begin(),listenList.end(),Neighbor::cmp_neigh);
-    Neighbor *hc = &listenList.back();
-    std::vector<Neighbor>::iterator itt = listenList.begin();
-    while(itt != listenList.end()){
+    std::sort(listeningList.begin(),listeningList.end(),Neighbor::cmp_neigh);
+    Neighbor *hc = &listeningList.back();
+    std::vector<Neighbor>::iterator itt = listeningList.begin();
+    while(itt != listeningList.end()){
         if(((itt->getLastseen()+ getNodeTimeout()) < simTime().dbl())&&(itt->getNode() != myAddress)){
-            listenList.erase(itt);
+            listeningList.erase(itt);
         }else{
             itt++;
         }
     }
 
-    for(std::vector<Neighbor>::iterator it = listenList.begin();it != listenList.end(); it++){
+    for(std::vector<Neighbor>::iterator it = listeningList.begin();it != listeningList.end(); it++){
         if(it->getNode() == myAddress){
             debugEV << "Selecionado " << it->getNode() << endl;
             hc = &(*it);
@@ -569,7 +565,7 @@ int RealLowestID::getElected(){
          if
     */
     debugEV << "Vizinhos: ";
-    for(std::vector<Neighbor>::iterator it = listenList.begin(); it != listenList.end(); it++){
+    for(std::vector<Neighbor>::iterator it = listeningList.begin(); it != listeningList.end(); it++){
         debugEV << it->getNode() << ", ";
     }
     debugEV << endl;

@@ -190,7 +190,7 @@ protected:
 
     NodeList childs_pre;
 
-    NeighList listenList;
+    NeighList listeningList;
 
     int head_candidate;
 

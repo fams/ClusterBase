@@ -195,13 +195,6 @@ void ClusterMCFA::handleSelfMsg(cMessage *msg) {
             novoGPS = 0;
             debugEV << "Enviando Mobile Info" << endl;
             sendMobInfo();
-            /*
-            if(getCurrentRole() == HEAD_NODE && mergeEnable){
-                sendCLINFO();
-            }else
-            {
-                debugEV << "SEMHEAD" <<endl;
-            }*/
             if(clusterNodeState==HEADSELECT and currStage == 0){
                 MCF();
             }

@@ -17,8 +17,15 @@ private:
 	Coord		currCoor;
 	double 		currSpeed;
 	double		currDirection;
+	double      totalDistance;
+	simtime_t   firstMove;
 
 public:
+	GPSInfo(){
+	    totalDistance = 0;
+	    currSpeed = 0;
+	    firstMove = simTime();
+	}
 	void updatePos(Coord *newCoor){
 		//Calculando Velocidade
 		double distance = newCoor->distance(&currCoor);
@@ -31,6 +38,10 @@ public:
 		lastCoor  = *newCoor; 
 		currCoor  = *newCoor;
 		lastPosTime = simTime();
+		totalDistance += distance;
+	}
+	void setDistance(double d){
+	    totalDistance = 0;
 	}
 		
 	double getSpeed(){
@@ -42,7 +53,17 @@ public:
 	double getDirection(){
 		return currDirection ;
 	}
-	
+	double getTotalDistance(){
+	    return totalDistance;
+	}
+	double getTime(){
+	    return simTime().dbl();
+	}
+	double getAvgSpeed(){
+//	    debugEV << totalDistance << " / " << " (" << simTime().dbl() << "-"  << firstMove << ")";
+	    return totalDistance/(simTime().dbl()-firstMove);
+	}
+
 };
 
 #endif

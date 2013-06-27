@@ -137,11 +137,13 @@ protected: //Types
 	/*GPS Category */
 	int catHostMove;
 
+    /* Save GPS Info */
+    GPSInfo gps;
+
     /** @brief Tentativas de contactar o head */
     int pollAttempt;
 
-	/* Save GPS Info */
-	GPSInfo gps;
+
 
 
 	/** @brief Estado do Node na formacao */

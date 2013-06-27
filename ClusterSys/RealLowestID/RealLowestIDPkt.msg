@@ -28,6 +28,8 @@ enum ClusterLowestIdMessageTypes
     	CLUSTER_NEIGH_INQ 	= 15040;
     	CLUSTER_NEIGH_RESP 	= 15050;
     	CLUSTER_REJOIN		= 15060;
+    	CLUSTER_HELO	    = 15070;
+    	CLUSTER_ELECTION	= 15080;
 }; 
     
 packet RealLowestIDPkt extends ClusterPkt {
